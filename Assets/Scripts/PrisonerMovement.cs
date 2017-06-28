@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class PrisonerMovement : MonoBehaviour {
 
-	public float speed = 8f, maxVelocity = 4f;
+	public float speed = 8f, maxVelocity = 4f, jumpForce = 4f;
 
 	private Rigidbody2D myBody;
 	private Animator anim;
+	[SerializeField]
+	private bool isJumping = false;
 
 	void Awake()
 	{
@@ -28,9 +30,11 @@ public class PrisonerMovement : MonoBehaviour {
 	void PrisonerMoveKeyboard()
 	{
 		float forceX = 0f;
+		float forceY = 0f;
 		float vel = Mathf.Abs (myBody.velocity.x);
 
 		float h = Input.GetAxisRaw ("Horizontal");
+
 		if (h > 0) {
 			if (vel < maxVelocity)
 				forceX = speed;
@@ -64,6 +68,23 @@ public class PrisonerMovement : MonoBehaviour {
 			anim.SetBool ("isWalking", false);
 		}
 
+		if (Input.GetButton ("Jump") && !isJumping) 
+		{
+			isJumping = true;
+			forceY = jumpForce;
+			anim.SetBool ("isJumping", true);
+			myBody.AddForce (new Vector2(0, forceY), ForceMode2D.Impulse);
+		}
+
 		myBody.AddForce (new Vector2(forceX, 0));
+	}
+
+	void OnCollisionEnter2D(Collision2D other)
+	{
+		if (other.gameObject.name == "TmpGround")
+		{
+			isJumping = false;
+			anim.SetBool ("isJumping", false);
+		}
 	}
 }

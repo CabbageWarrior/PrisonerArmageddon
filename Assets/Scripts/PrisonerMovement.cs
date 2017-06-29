@@ -81,7 +81,7 @@ public class PrisonerMovement : MonoBehaviour {
 
 	void OnCollisionEnter2D(Collision2D other)
 	{
-		if (other.gameObject.name == "TmpGround")
+		if (other.gameObject.name == "Ground")
 		{
 			isJumping = false;
 			anim.SetBool ("isJumping", false);

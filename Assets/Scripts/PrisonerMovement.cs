@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class PrisonerMovement : MonoBehaviour {
 
-	public float speed = 8f, maxVelocity = 4f, jumpForce = 4f;
+	public float speed = 12f, maxVelocity = 3f, jumpForce = 4f;
+	public LayerMask whatIsGround;
 
+//	private int whatIsGround = 1;
 	private Rigidbody2D myBody;
-	private Animator anim;
 	[SerializeField]
 	private bool isJumping = false;
+	private Animator anim;
+
 
 	void Awake()
 	{
@@ -35,39 +38,60 @@ public class PrisonerMovement : MonoBehaviour {
 
 		float horizontalInput = Input.GetAxisRaw ("Horizontal");
 
-		if (horizontalInput > 0) {
-			if (vel < maxVelocity)
-				forceX = speed;
+		if (!isJumping) {
 
-			if (transform.localScale.x < 0) 
-			{
-				Vector3 temp = transform.localScale;
-				temp.x *= -1;
-				transform.localScale = temp;
-			} 
+			RaycastHit2D hit = Physics2D.Raycast(transform.position, -Vector2.up, 1f, whatIsGround);
+			Debug.Log (Mathf.Abs(hit.normal.x));
 
+			if (horizontalInput > 0) {
+				if (vel < maxVelocity)
+					forceX = speed;
+				if (transform.localScale.x < 0) {
+					myBody.velocity = new Vector2 (0, 0);
+					Vector3 temp = transform.localScale;
+					temp.x *= -1;
+					transform.localScale = temp;
+				} 
+					
+				anim.SetBool ("isWalking", true);
 
-			anim.SetBool ("isWalking", true);
+			} else if (horizontalInput < 0) {
 
+				if (vel < maxVelocity)
+					forceX = -speed;
+				if (transform.localScale.x > 0) {
+					myBody.velocity = new Vector2 (0, 0);
+					Vector3 temp = transform.localScale;
+					temp.x *= -1;
+					transform.localScale = temp;
+				} 
 
-		} else if (horizontalInput < 0) {
+				anim.SetBool ("isWalking", true);
 
-			if (vel < maxVelocity)
-				forceX = -speed;
+			} else {
+				if (anim.GetBool("isWalking")){
+					myBody.velocity = new Vector2 (0, 0);
+				}
+				anim.SetBool ("isWalking", false);
+				if (!isJumping) {
+					myBody.velocity = new Vector2 (0, 0);
+				}
+			}
 
-			if (transform.localScale.x > 0) 
-			{
-				Vector3 temp = transform.localScale;
-				temp.x *= -1;
-				transform.localScale = temp;
-			} 
+			if(hit.collider != null && Mathf.Abs(hit.normal.x) > 0.1f){
 
-			anim.SetBool ("isWalking", true);
+				Debug.Log ("Siamo inclinati");
 
-		} else {
-			anim.SetBool ("isWalking", false);
-			if (!isJumping) {
-				myBody.velocity = new Vector2 (0, 0);
+				if (Mathf.Abs (hit.normal.y) < 0.8f) {
+					Debug.Log ("Siamo molto inclinati");
+					myBody.AddForce (new Vector2 (hit.normal.x * forceX / 4.0f, hit.normal.y * forceX));
+				} else {
+					myBody.AddForce (new Vector2 (hit.normal.x * forceX, hit.normal.y * forceX));
+				}
+	//			myBody.velocity =  new Vector2(horizontalInput * maxVelocity, myBody.velocity.y);
+			} else{
+				Debug.Log ("Siamo poco inclinati");
+				myBody.AddForce (new Vector2(forceX, 0));
 			}
 		}
 
@@ -79,7 +103,7 @@ public class PrisonerMovement : MonoBehaviour {
 			myBody.AddForce (new Vector2(0, forceY), ForceMode2D.Impulse);
 		}
 
-		myBody.AddForce (new Vector2(forceX, 0));
+
 	}
 
 	void OnCollisionEnter2D(Collision2D other)
@@ -88,6 +112,9 @@ public class PrisonerMovement : MonoBehaviour {
 		{
 			isJumping = false;
 			anim.SetBool ("isJumping", false);
+			myBody.velocity = new Vector2 (0, 0);
 		}
+
 	}
+		
 }

@@ -33,9 +33,9 @@ public class PrisonerMovement : MonoBehaviour {
 		float forceY = 0f;
 		float vel = Mathf.Abs (myBody.velocity.x);
 
-		float h = Input.GetAxisRaw ("Horizontal");
+		float horizontalInput = Input.GetAxisRaw ("Horizontal");
 
-		if (h > 0) {
+		if (horizontalInput > 0) {
 			if (vel < maxVelocity)
 				forceX = speed;
 
@@ -50,7 +50,7 @@ public class PrisonerMovement : MonoBehaviour {
 			anim.SetBool ("isWalking", true);
 
 
-		} else if (h < 0) {
+		} else if (horizontalInput < 0) {
 
 			if (vel < maxVelocity)
 				forceX = -speed;
@@ -66,6 +66,9 @@ public class PrisonerMovement : MonoBehaviour {
 
 		} else {
 			anim.SetBool ("isWalking", false);
+			if (!isJumping) {
+				myBody.velocity = new Vector2 (0, 0);
+			}
 		}
 
 		if (Input.GetButton ("Jump") && !isJumping) 

@@ -1,18 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PrisonerMovement : MonoBehaviour {
 
 	public float speed = 12f, maxVelocity = 3f, jumpForce = 4f;
 	public LayerMask whatIsGround;
+    public Text textForceX, textForceY;
 
 //	private int whatIsGround = 1;
 	private Rigidbody2D myBody;
 	[SerializeField]
 	private bool isJumping = false;
 	private Animator anim;
-
+    private float planeParallelX, planeParallelY;
 
 	void Awake()
 	{
@@ -34,19 +36,26 @@ public class PrisonerMovement : MonoBehaviour {
 	{
 		float forceX = 0f;
 		float forceY = 0f;
-		float vel = Mathf.Abs (myBody.velocity.x);
+        float velocityX = 0f;
+        float velocityY = 0f;
+        // float vel = Mathf.Sqrt (Mathf.Pow(myBody.velocity.x, 2.0f) + Mathf.Pow(myBody.velocity.y, 2.0f));
+        float vel = myBody.velocity.x;
 
-		float horizontalInput = Input.GetAxisRaw ("Horizontal");
+        float horizontalInput = Input.GetAxisRaw ("Horizontal");
 
 		if (!isJumping) {
 
 			RaycastHit2D hit = Physics2D.Raycast(transform.position, -Vector2.up, 1f, whatIsGround);
-			Debug.Log (Mathf.Abs(hit.normal.x));
 
 			if (horizontalInput > 0) {
-				if (vel < maxVelocity)
-					forceX = speed;
-				if (transform.localScale.x < 0) {
+                if (vel < maxVelocity)
+                {
+                    forceX = speed;
+                }
+
+                // vel = maxVelocity;
+
+                if (transform.localScale.x < 0) {
 					myBody.velocity = new Vector2 (0, 0);
 					Vector3 temp = transform.localScale;
 					temp.x *= -1;
@@ -57,9 +66,15 @@ public class PrisonerMovement : MonoBehaviour {
 
 			} else if (horizontalInput < 0) {
 
-				if (vel < maxVelocity)
-					forceX = -speed;
-				if (transform.localScale.x > 0) {
+                if (vel < maxVelocity)
+                {
+                    forceX = -speed;
+                //    velocityX = -maxVelocity;
+                }
+
+                // vel = maxVelocity;
+
+                if (transform.localScale.x > 0) {
 					myBody.velocity = new Vector2 (0, 0);
 					Vector3 temp = transform.localScale;
 					temp.x *= -1;
@@ -69,7 +84,9 @@ public class PrisonerMovement : MonoBehaviour {
 				anim.SetBool ("isWalking", true);
 
 			} else {
-				if (anim.GetBool("isWalking")){
+                vel = 0f;
+
+                if (anim.GetBool("isWalking")){
 					myBody.velocity = new Vector2 (0, 0);
 				}
 				anim.SetBool ("isWalking", false);
@@ -78,22 +95,58 @@ public class PrisonerMovement : MonoBehaviour {
 				}
 			}
 
+            /*
+            // Checks the inclination of the terrain
 			if(hit.collider != null && Mathf.Abs(hit.normal.x) > 0.1f){
 
-				Debug.Log ("Siamo inclinati");
+                if (Mathf.Sign(horizontalInput) == Mathf.Sign(hit.normal.x))
+                {
+                    velocityX = Mathf.Sign(horizontalInput) * Mathf.Abs((hit.normal.x * vel));
+                    velocityY = Mathf.Abs((hit.normal.y * vel));
+                    myBody.velocity = new Vector2(velocityX, -velocityY);
+                    textForceX.text = velocityX.ToString();
+                    textForceY.text = velocityY.ToString();
+                }
+                else
+                {
+                    velocityX = Mathf.Sign(horizontalInput) * Mathf.Abs((hit.normal.x * vel));
+                    velocityY = -Mathf.Abs((hit.normal.y * vel));
+                    myBody.velocity = new Vector2(velocityX, velocityY);
+                    textForceX.text = velocityX.ToString();
+                    textForceY.text = velocityY.ToString();
+                }
+                */
 
-				if (Mathf.Abs (hit.normal.y) < 0.8f) {
-					Debug.Log ("Siamo molto inclinati");
-					myBody.AddForce (new Vector2 (hit.normal.x * forceX / 4.0f, hit.normal.y * forceX));
-				} else {
-					myBody.AddForce (new Vector2 (hit.normal.x * forceX, hit.normal.y * forceX));
-				}
-	//			myBody.velocity =  new Vector2(horizontalInput * maxVelocity, myBody.velocity.y);
-			} else{
-				Debug.Log ("Siamo poco inclinati");
-				myBody.AddForce (new Vector2(forceX, 0));
-			}
-		}
+            /*
+            // Solution using forces, not really working
+            if (hit.collider != null && Mathf.Abs(hit.normal.x) > 0.1f)
+            {
+                if (Mathf.Sign(forceX) == Mathf.Sign(hit.normal.x))
+                {
+                    planeParallelX = Mathf.Sign(forceX) * (hit.normal.x * forceX);
+                    myBody.AddForce(new Vector2(planeParallelX, 0));
+                    textForceX.text = planeParallelX.ToString();
+                    textForceY.text = "0";        
+
+                }
+                else
+                {
+                    planeParallelX = Mathf.Sign(forceX) * Mathf.Abs((hit.normal.x * forceX));
+                    planeParallelY = hit.normal.y * forceX;
+                    myBody.AddForce(new Vector2(planeParallelX, planeParallelY));
+                    textForceX.text = planeParallelX.ToString();
+                    textForceY.text = planeParallelY.ToString();
+                }
+
+                }
+
+            else {
+                // myBody.AddForce (new Vector2(forceX, 0));
+                myBody.velocity = new Vector2(Mathf.Sign(horizontalInput) * velocityX, 0);
+            } */
+
+            myBody.AddForce(new Vector2(forceX, 0));
+        }
 
 		if (Input.GetButton ("Jump") && !isJumping) 
 		{

@@ -6,13 +6,21 @@ public class WeaponController : MonoBehaviour {
 
 	Camera cam;
 
+	public float shotPower;
+	public GameObject weaponBullet;
+
+	private Transform bulletSpawnerTransform;
+	private Transform pointerTransform;
+
 	void Awake() {
 		cam = Camera.main;
 	}
 
 	// Use this for initialization
 	void Start () {
-
+		Transform spriteTransform = transform.GetChild(0); //transform.Find ("Sprite").transform;
+		pointerTransform = spriteTransform.GetChild(0); //spriteTransform.Find ("Pointer").transform;
+		bulletSpawnerTransform = spriteTransform.GetChild(1);//spriteTransform.Find ("BulletSpawner").transform;
 	}
 	
 	// Update is called once per frame
@@ -40,7 +48,26 @@ public class WeaponController : MonoBehaviour {
 			transform.localScale = new Vector3 (Mathf.Abs (transform.localScale.x) * (isPlayerFlipped ? -1 : 1), transform.localScale.y, transform.localScale.z);
 			transform.rotation = Quaternion.Euler (0, 0, AngleDeg);
 		}
-
-
 	}
+
+	/// <summary>
+	/// Shots the bullet.
+	/// </summary>
+	public void ShotBullet() {
+		if (pointerTransform != null && bulletSpawnerTransform != null) {
+			float AngleDeg = Mathf.Atan2 (pointerTransform.position.y - bulletSpawnerTransform.position.y, pointerTransform.position.x - bulletSpawnerTransform.position.x);
+			Vector2 newImpulse = new Vector2 (Mathf.Cos (AngleDeg), Mathf.Sin (AngleDeg)) * shotPower;
+
+			// Spawn the bullet.
+			GameObject projectile = (GameObject)Instantiate (
+				weaponBullet,
+				bulletSpawnerTransform.position,
+				Quaternion.identity //Euler (new Vector3 (AngleDeg, 0, 0))
+			);
+
+			// Add impulse to new bullet.
+			projectile.GetComponent<Rigidbody2D> ().AddForce(newImpulse, ForceMode2D.Impulse);
+		}
+	}
+
 }

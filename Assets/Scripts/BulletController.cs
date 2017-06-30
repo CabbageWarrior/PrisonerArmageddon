@@ -62,7 +62,7 @@ public class BulletController : MonoBehaviour
             //Debug.Log("angle = " + angle);
 
             // Update of the Euler angles of the Sprite contained into the Bullet object.
-            bulletSpriteTransform.localEulerAngles = new Vector3(0f, 0f, angle + 45f);
+			bulletSpriteTransform.localEulerAngles = new Vector3(0f, 0f, angle); // + 45f);
         }
     }
 

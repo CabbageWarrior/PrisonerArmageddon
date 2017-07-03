@@ -14,12 +14,13 @@ public class PrisonerMovement : MonoBehaviour {
 	[SerializeField]
 	private bool isJumping = false;
 	private Animator anim;
-    private float planeParallelX, planeParallelY, prisonerWidth;
+	private float planeParallelX, planeParallelY, prisonerWidth, prisonerHeight;
 
 	void Awake()
 	{
 		myBody = GetComponent<Rigidbody2D> ();
         prisonerWidth = transform.localScale.x;
+		prisonerHeight = transform.localScale.y;
         anim = GetComponent<Animator> ();
 	}
 
@@ -35,8 +36,6 @@ public class PrisonerMovement : MonoBehaviour {
 
 	void PrisonerMoveKeyboard()
 	{
-		//float forceX = 0f;
-		float forceY = 0f;
         float velocityX = 0f;
         float velocityY = 0f;
         float slopeAngle;
@@ -98,7 +97,9 @@ public class PrisonerMovement : MonoBehaviour {
                 RaycastHit2D hitDownBack = Physics2D.Raycast(backRayTransform, Vector2.down, 3f, whatIsGround);
                 RaycastHit2D hitDownFront = Physics2D.Raycast(frontRayTransform, Vector2.down, 3f, whatIsGround);
                 distanceBack = hitDownBack.distance;
+				text1.text = distanceBack.ToString();
                 distanceFront = hitDownFront.distance;
+				text2.text = distanceFront.ToString();
                 distanceDifference = distanceBack - distanceFront;
                 slopeAngle = Mathf.Rad2Deg * Mathf.Atan(distanceDifference/prisonerWidth);
 
@@ -111,19 +112,18 @@ public class PrisonerMovement : MonoBehaviour {
                         if ((horizontalInput < 0 && distanceBack < distanceFront) || (horizontalInput > 0 && distanceBack > distanceFront))
                         {
                             velocityX = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * vel;
-                            velocityY = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * vel;
-                            myBody.velocity = new Vector2(velocityX, velocityY);
+                            velocityY = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * vel;     
                         }
                         else
                         {
                             velocityX = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * vel;
-                            velocityY = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * -vel;
-                            myBody.velocity = new Vector2(velocityX, velocityY);
+                            velocityY = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * -vel;                
                         }
                     }
                     else
                     {
-                        myBody.velocity = new Vector2(vel, 0);
+						velocityX = vel;
+						velocityY = 0f;
                     }
                 }
 
@@ -134,20 +134,24 @@ public class PrisonerMovement : MonoBehaviour {
                     {
                         velocityX = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * vel;
                         velocityY = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * -vel;
-                        myBody.velocity = new Vector2(velocityX, velocityY);
                     }
                     else
                     {
                         velocityX = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * vel;
                         velocityY = Mathf.Sin(slopeAngle * Mathf.Deg2Rad) * vel;
-                        myBody.velocity = new Vector2(velocityX, velocityY);
                     }
                 }
                 else
-                {
-                    myBody.velocity = new Vector2(vel, 0);
+                {	
+					velocityX = vel;
+					velocityY = 0f;
                 }
 
+				if (Mathf.Min(distanceBack, distanceFront) > prisonerHeight/2.0f)
+				{
+					velocityY -= 1;
+				}
+				myBody.velocity = new Vector2(velocityX, velocityY);
 
             }
 
@@ -158,10 +162,7 @@ public class PrisonerMovement : MonoBehaviour {
 
             if (Input.GetButton("Jump") && !isJumping)
             {
-                isJumping = true;
-                forceY = jumpForce;
-                anim.SetBool("isJumping", true);
-                myBody.AddForce(new Vector2(0, forceY), ForceMode2D.Impulse);
+				Jump ();
             }
 
             //text1.text = velocityX.ToString();
@@ -188,6 +189,21 @@ public class PrisonerMovement : MonoBehaviour {
 			myBody.velocity = new Vector2 (0, 0);
 		}
 
+	}
+
+	void Jump()
+	{
+		isJumping = true;
+		myBody.velocity = new Vector2(0, 0);
+		anim.SetBool("isJumping", true);
+		if (transform.localScale.x > 0f) 
+		{
+			myBody.AddForce (new Vector2 (jumpForce, jumpForce), ForceMode2D.Impulse);
+		} 
+		else 
+		{
+			myBody.AddForce (new Vector2 (-jumpForce, jumpForce), ForceMode2D.Impulse);
+		}
 	}
 		
 }

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MapGenerator : MonoBehaviour {
 
+	/*
 	//public GameObject ground;
 	public int mapWidth, mapHeight;
 	public float groundPercBot, waterPercLeft, waterPercRight, featuresScale;
@@ -40,8 +41,11 @@ public class MapGenerator : MonoBehaviour {
 
 		y++;
 	}
+	*/
 }
 
+// Experiments...
+/*
 public struct Coord : IStructuralEquatable<Coord>
 {
 	public Coord(int n, int m) : this()
@@ -60,7 +64,7 @@ public class Cluster
 	public Cluster(IEnumerable<Coord> coords)
 	{
 		if (coords == null)
-			throw new ArgumentNullExcetion ("coords");
+			throw new ArgumentNullException ("coords");
 
 		coords = coords;
 	}
@@ -68,3 +72,4 @@ public class Cluster
 	public IEnumerable<Coord> Coords { get; private set;}
 
 }
+*/

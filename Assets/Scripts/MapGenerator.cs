@@ -51,6 +51,8 @@ public class ClusterFinder{
 	private float[,] matrix;
 	private int[,] mask;
 	private Cluster[] allClusters;
+	private Cluster currentCluster;
+	private Coordinates coord;
 
 	public ClusterFinder(float[,] matrix, int n, int m, float maskThreshold)
 	{
@@ -60,6 +62,7 @@ public class ClusterFinder{
 		this.matrix = matrix;
 		mask = new int[matrix.GetLength(0), matrix.GetLength(1)];
 		GetMask ();
+		GetClusters ();
 	}
 
 	public void GetMask()
@@ -84,27 +87,78 @@ public class ClusterFinder{
 			{
 				if (mask [i, j] = 1) 
 				{
-					thisCluster = new Cluster();
-
+					coord = Coordinates(x, y);
+					currentCluster = new Cluster(coord);
+					FillCluster (x, y);
 				}
 			}
 		} 
 	}
 
-	public void FillCluster()
+	public void FillCluster(int x, int y)
 	{
 		// Adds one point to the cluster and then set it to 0
 		// looks for non-zero neighbours
 		// Repeats for all neighbours until no neighbours are found
+
+		Coordinates coord;
+		mask [x, y] = 0;
+		Coordinates[] allNeighbours = getFirstNeighbours (x, y);
+		for (int i = 0; i < allNeighbours.Length; i++)
+		{
+			coord = allNeighbours [i];
+			if (mask [coord.x, coord.y])
+				currentCluster.Add (coord);
+		}
+
 	}
 
+	public Coordinates[] getFirstNeighbours(int x, int y)
+	{	
+		int[] all_x = new int[3];
+		int[] all_y = new int[3];
+
+		int startingX = x-1;
+		for (int i=0; i<3; i++)
+		{
+			all_x [i] = startingX + i;
+		}
+
+		int startingY = y-1;
+		for (int i=0; i<3; i++)
+		{
+			all_y [i] = startingY + i;
+		}
+
+		Coordinates[] allNeighbours = new Coordinates[(all_x.Length * all_y.Length)-1];
+		for (int i = 0; i < 3; i++)
+		{
+			for (int j = 0; j < 3; j++) 
+			{	
+				if (i != 1 && j != 1)
+					allNeighbours[i+j] = Coordinates(all_x[i], all_y[j]);
+			}
+		}
+
+		return allNighbours;
+	}
+		
 }
 
 public class Cluster
 {
-	private Coordinates[] allCoordinates;
+	private List<Coordinates> allCoordinates = new List<Coordinates>();
 	private bool isInThrehold;
 
+	public Cluster(Coordinates coord)
+	{
+		Add (coord);
+	}
+
+	public void Add(Coordinates coord)
+	{
+		allCoordinates.Add (coord);
+	}
 }
 
 public class Coordinates

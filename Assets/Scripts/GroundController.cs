@@ -2,6 +2,9 @@
 
 public class GroundController : MonoBehaviour
 {
+
+	public GameObject mapGenerator;
+
     // Reference variable for the SpriteRenderer component.
     private SpriteRenderer spriteRenderer;
 
@@ -13,6 +16,7 @@ public class GroundController : MonoBehaviour
 
     // Utilities: Transparent color.
     private Color colorTransparent;
+
     
     /// <summary>
     /// Start method.
@@ -21,7 +25,7 @@ public class GroundController : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         
-        Texture2D textureOriginal = (Texture2D)Resources.Load("ground2");
+		Texture2D textureOriginal = mapGenerator.GetComponent<MapGenerator>().GetMapTexture();
         // Resources.Load("nome_do_arquivo") carrega um arquivo localizado
         // em Assets/Resources
         Texture2D tex_clone = (Texture2D)Instantiate(textureOriginal);

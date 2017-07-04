@@ -7,19 +7,19 @@ public class MapGenerator : MonoBehaviour {
 
 	//public GameObject ground;
 	public int mapWidth, mapHeight;
-	public float groundPercBot, waterPercLeft, waterPercRight, featuresScale;
+	public float groundPercBot, waterPercLeft, waterPercRight, featuresScale, threshold;
 
 	//private SpriteRenderer mapRenderer;
 	private Texture2D mapProfile;
 	private float[,] pixels;
+	private int[,] pixelsMask;
+	private Color[] pixelsColor;
+	private float[] percThresholds;
+	private ClusterFinder clusterFinder;
 
 	// Use this for initialization
 	void Start () {
 
-		//mapRenderer = ground.GetComponent<SpriteRenderer> ();
-		mapProfile = new Texture2D (mapWidth, mapHeight);
-		pixels = new float[mapProfile.width, mapProfile.height];
-		CalcNoise ();
 	}
 	
 	// Update is called once per frame
@@ -30,46 +30,88 @@ public class MapGenerator : MonoBehaviour {
 	void CalcNoise()
 	{
 		float x = 0f, y = 0f;
-		while(x < mapProfile.width)
-		{
-			float xCoord = Mathf.Round(x / mapWidth * featuresScale);
-			float yCoord = Mathf.Round(y / mapWidth * featuresScale);
-			float sample = Mathf.PerlinNoise (xCoord, yCoord);
-			pixels [(int)x, (int)y] = sample;
-			x++;
+		while (y < mapProfile.height) {
+			while (x < mapProfile.width) {
+				float xCoord = Mathf.Round (x / mapWidth * featuresScale);
+				float yCoord = Mathf.Round (y / mapWidth * featuresScale);
+				float sample = Mathf.PerlinNoise (xCoord, yCoord);
+				pixels [(int)x, (int)y] = sample;
+				x++;
+			}
+			y++;
 		}
-
-		y++;
 	}
 
+	void FillColorArray()
+	{	
+		int idx;
+		for (int i = 0; i < mapProfile.width; i++) 
+		{
+			for (int j = 0; j < mapProfile.height; j++) 
+			{	
+				idx = (i * mapProfile.width) + j;
+				if (pixelsMask [i, j] == 1) {
+					pixelsColor [idx] = Color.white;
+				}
+				else {
+					pixelsColor [idx] = Color.black;
+					pixelsColor [idx].a = 0f;
+				}
+			}
+		}
+	}
+
+	public Texture2D GetMapTexture()
+	{
+		//mapRenderer = ground.GetComponent<SpriteRenderer> ();
+		mapProfile = new Texture2D (mapWidth, mapHeight);
+		pixels = new float[mapProfile.width, mapProfile.height];
+		pixelsColor = new Color[mapProfile.width * mapProfile.height];
+		percThresholds = new float[3]{groundPercBot, waterPercLeft, waterPercRight};
+		CalcNoise ();
+		clusterFinder = new ClusterFinder (pixels, mapProfile.width, mapProfile.height, threshold, percThresholds);
+		pixelsMask = clusterFinder.GetMask ();
+		FillColorArray ();
+		mapProfile.SetPixels(pixelsColor);
+		mapProfile.Apply();
+
+		return mapProfile;
+	}
 }
 	
 public class ClusterFinder{
 
 	private int n, m;
 	private float maskThreshold;
+	private float[] percThresholds;
 	private float[,] matrix;
 	private int[,] mask;
+	private List<Cluster> allClustersList = new List<Cluster>();
 	private Cluster[] allClusters;
 	private Cluster currentCluster;
 	private Coordinates coord;
 
-	public ClusterFinder(float[,] matrix, int n, int m, float maskThreshold)
+	public ClusterFinder(float[,] matrix, int n, int m, float maskThreshold, float[] percThresholds)
 	{
-		this.m = m;
 		this.n = n;
+		this.m = m;
 		this.maskThreshold = maskThreshold;
 		this.matrix = matrix;
+		this.percThresholds = percThresholds;
+		this.percThresholds [0] = Mathf.Round(this.percThresholds [0] * m);
+		this.percThresholds [1] = Mathf.Round(this.percThresholds [1] * n); 
+		this.percThresholds [2] = Mathf.Round(this.percThresholds [2] * n); 
 		mask = new int[matrix.GetLength(0), matrix.GetLength(1)];
-		GetMask ();
+		CalcMask ();
 		GetClusters ();
+		UpdateMask ();
 	}
 
-	public void GetMask()
+	public void CalcMask()
 	{
 		for (int i = 0; i < n; i++)
 		{
-			for (int j = 0; j < n; j++) 
+			for (int j = 0; j < m; j++) 
 			{
 				if (matrix[i,j] > maskThreshold)
 					mask[i,j] = 1;
@@ -83,40 +125,47 @@ public class ClusterFinder{
 	{
 		for (int i = 0; i < n; i++)
 		{
-			for (int j = 0; j < n; j++) 
+			for (int j = 0; j < m; j++) 
 			{
-				if (mask [i, j] = 1) 
+				if (mask [i, j] == 1) 
 				{
-					coord = Coordinates(x, y);
+					coord = new Coordinates(i, j);
 					currentCluster = new Cluster(coord);
-					FillCluster (x, y);
+					FillCluster (i, j);
+					currentCluster.CreateCoordinatesArray ();
+					allClustersList.Add (currentCluster);
 				}
 			}
-		} 
+		}
+
+		CreateClustersArray ();
 	}
 
 	public void FillCluster(int x, int y)
 	{
-		// Adds one point to the cluster and then set it to 0
-		// looks for non-zero neighbours
-		// Repeats for all neighbours until no neighbours are found
-
 		Coordinates coord;
 		mask [x, y] = 0;
 		Coordinates[] allNeighbours = getFirstNeighbours (x, y);
+
 		for (int i = 0; i < allNeighbours.Length; i++)
 		{
 			coord = allNeighbours [i];
-			if (mask [coord.x, coord.y])
+			if (coord.x >=0 && coord.y >=0 && coord.x <=n && coord.y <=m && mask [coord.x, coord.y] == 1) 
+			{
 				currentCluster.Add (coord);
+				mask [coord.x, coord.y] = 0;
+				FillCluster (x, y);
+				if (!currentCluster.isInThreshold && y > this.percThresholds [0] && x > this.percThresholds [1] && x < this.percThresholds [2])
+					currentCluster.isInThreshold = true;
+			}
 		}
-
 	}
 
 	public Coordinates[] getFirstNeighbours(int x, int y)
 	{	
 		int[] all_x = new int[3];
 		int[] all_y = new int[3];
+		int indx;
 
 		int startingX = x-1;
 		for (int i=0; i<3; i++)
@@ -135,35 +184,91 @@ public class ClusterFinder{
 		{
 			for (int j = 0; j < 3; j++) 
 			{	
-				if (i != 1 && j != 1)
-					allNeighbours[i+j] = Coordinates(all_x[i], all_y[j]);
+				indx = (i * 3) + j;
+				if (indx > 4)
+					indx--;
+				
+				if (i != 1 || j != 1)
+					allNeighbours[indx] = new Coordinates(all_x[i], all_y[j]);
 			}
 		}
 
-		return allNighbours;
+		return allNeighbours;
+	}
+
+	public void CreateClustersArray()
+	{
+		allClusters = allClustersList.ToArray();
+	}
+
+	public void UpdateMask()
+	{
+		Cluster updateCluster;
+		Coordinates coord;
+		Coordinates[] updateCoordinates;
+		int clustersNbr = allClusters.Length;
+		int pointsNbr;
+		for (int i=0; i<clustersNbr; i++)
+		{
+			updateCluster = allClusters[i];
+			if (!updateCluster.getIsInThreshold()) 
+			{	
+				updateCoordinates = currentCluster.getAllCoordinates ();
+				pointsNbr = updateCoordinates.Length;
+				for (int j=0; j<pointsNbr; j++)
+				{
+					coord = updateCoordinates [j];
+					mask[coord.x, coord.y] = 0;
+				}
+			}
+		}
+	}
+
+	public int[,] GetMask()
+	{	
+		return mask;
 	}
 		
 }
 
 public class Cluster
 {
-	private List<Coordinates> allCoordinates = new List<Coordinates>();
-	private bool isInThrehold;
+	public bool isInThreshold;
+
+	private List<Coordinates> allCoordinatesList = new List<Coordinates>();
+	private Coordinates[] allCoordinates;
 
 	public Cluster(Coordinates coord)
 	{
 		Add (coord);
+		isInThreshold = false;
 	}
 
 	public void Add(Coordinates coord)
 	{
-		allCoordinates.Add (coord);
+		allCoordinatesList.Add (coord);
 	}
+
+	public void CreateCoordinatesArray()
+	{
+		allCoordinates = allCoordinatesList.ToArray();
+	}
+
+	public bool getIsInThreshold()
+	{
+		return isInThreshold;
+	}
+
+	public Coordinates[] getAllCoordinates()
+	{
+		return allCoordinates;
+	}
+
 }
 
 public class Coordinates
 {
-	private int x, y;
+	public int x, y;
 
 	public Coordinates(int x, int y)
 	{

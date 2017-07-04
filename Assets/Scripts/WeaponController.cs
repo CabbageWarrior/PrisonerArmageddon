@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class WeaponController : MonoBehaviour {
 
@@ -11,6 +12,13 @@ public class WeaponController : MonoBehaviour {
 
 	private Transform bulletSpawnerTransform;
 	private Transform pointerTransform;
+	private Transform progressBarTransform;
+
+	private bool isShooting = false;
+	private Vector3 initialMousePosition;
+	private SpriteRenderer progressBarRenderer;
+	private Texture2D progressBarBaseTexture;
+	private float barSpeed = 400f, barLength = 0f;
 
 	void Awake() {
 		cam = Camera.main;
@@ -18,9 +26,15 @@ public class WeaponController : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		Transform spriteTransform = transform.GetChild(0); //transform.Find ("Sprite").transform;
-		pointerTransform = spriteTransform.GetChild(0); //spriteTransform.Find ("Pointer").transform;
-		bulletSpawnerTransform = spriteTransform.GetChild(1);//spriteTransform.Find ("BulletSpawner").transform;
+		Transform spriteTransform = transform.GetChild(0);
+		pointerTransform = spriteTransform.GetChild(0);
+		bulletSpawnerTransform = spriteTransform.GetChild(1);
+		progressBarTransform = bulletSpawnerTransform.GetChild(0);
+
+		progressBarRenderer = progressBarTransform.GetComponent<SpriteRenderer> ();
+		progressBarBaseTexture = (Texture2D)Resources.Load("progress-bar");
+
+		progressBarRenderer.sprite = UpdatedProgressSprite(0f);
 	}
 	
 	// Update is called once per frame
@@ -38,15 +52,52 @@ public class WeaponController : MonoBehaviour {
 
 		bool isPlayerFlipped = (transform.parent.parent.transform.localScale.x < 0);
 
+		float minAimAngle, maxAimAngle;
+
+		if (isPlayerFlipped) {
+			minAimAngle = -90f;
+			maxAimAngle = 90f;
+		}
+		else {
+			minAimAngle = 90f;
+			maxAimAngle = 270f;
+		}
+
 		// Rotate the weapon dinamically.
 		if (flipSprites) {
-			//Debug.Log ("FLIPPA!");
-			transform.localScale = new Vector3 (-Mathf.Abs (transform.localScale.x) * (isPlayerFlipped ? -1 : 1), transform.localScale.y, transform.localScale.z);
-			transform.rotation = Quaternion.Euler (0, 0, -AngleDeg);
+			if (AngleDeg >= minAimAngle && AngleDeg <= maxAimAngle) {
+				//Flip the sprite.
+				transform.localScale = new Vector3 (-Mathf.Abs (transform.localScale.x) * (isPlayerFlipped ? -1 : 1), transform.localScale.y, transform.localScale.z);
+				transform.rotation = Quaternion.Euler (0, 0, -AngleDeg);
+				progressBarTransform.localScale = new Vector3 (-Mathf.Abs (progressBarTransform.localScale.x), -Mathf.Abs (progressBarTransform.localScale.y), progressBarTransform.localScale.z);
+			}
+
 		} else {
-			//Debug.Log ("NON FLIPPARE!");
-			transform.localScale = new Vector3 (Mathf.Abs (transform.localScale.x) * (isPlayerFlipped ? -1 : 1), transform.localScale.y, transform.localScale.z);
-			transform.rotation = Quaternion.Euler (0, 0, AngleDeg);
+			if ((AngleDeg + 180) >= minAimAngle && (AngleDeg + 180) <= maxAimAngle) {
+				//Don't flip the sprite.
+				transform.localScale = new Vector3 (Mathf.Abs (transform.localScale.x) * (isPlayerFlipped ? -1 : 1), transform.localScale.y, transform.localScale.z);
+				transform.rotation = Quaternion.Euler (0, 0, AngleDeg);
+				progressBarTransform.localScale = new Vector3 (-Mathf.Abs (progressBarTransform.localScale.x), Mathf.Abs (progressBarTransform.localScale.y), progressBarTransform.localScale.z);
+			}
+
+		}
+
+
+		// Progress Bar changes on input.
+		if (Input.GetMouseButtonDown (0)) {
+			initialMousePosition = Input.mousePosition;
+		}
+
+		if (Input.GetMouseButton (0)) {
+
+			//float barLength;
+			//barLength = Mathf.Clamp (Input.mousePosition.x - initialMousePosition.x, 0f, baseTexture.width);
+			UpdateBarLength ();
+			progressBarRenderer.sprite = UpdatedProgressSprite(barLength);
+		}
+
+		if (Input.GetMouseButtonUp (0)) {
+			ResetBarLenght ();
 		}
 	}
 
@@ -56,7 +107,7 @@ public class WeaponController : MonoBehaviour {
 	public void ShotBullet() {
 		if (pointerTransform != null && bulletSpawnerTransform != null) {
 			float AngleDeg = Mathf.Atan2 (pointerTransform.position.y - bulletSpawnerTransform.position.y, pointerTransform.position.x - bulletSpawnerTransform.position.x);
-			Vector2 newImpulse = new Vector2 (Mathf.Cos (AngleDeg), Mathf.Sin (AngleDeg)) * shotPower;
+			Vector2 newImpulse = new Vector2 (Mathf.Cos (AngleDeg), Mathf.Sin (AngleDeg)) * shotPower * barLength / progressBarBaseTexture.width;
 
 			// Spawn the bullet.
 			GameObject projectile = (GameObject)Instantiate (
@@ -70,4 +121,19 @@ public class WeaponController : MonoBehaviour {
 		}
 	}
 
+
+	// PROGRESS BAR METHODS
+	private Sprite UpdatedProgressSprite(float barLength) {
+		return Sprite.Create (progressBarBaseTexture, new Rect(0f,0f, barLength, progressBarBaseTexture.height), new Vector2(0f, 0.5f), 250f);
+	}
+
+	public void UpdateBarLength () {
+		barLength += barSpeed * Time.deltaTime;
+		barLength = Mathf.Clamp (barLength, 0f, progressBarBaseTexture.width);
+	} 
+
+	public void ResetBarLenght () {
+		barLength = 0;
+		progressBarRenderer.sprite = UpdatedProgressSprite (barLength);
+	}
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class MapGenerator : MonoBehaviour {
-
+	/*
 
 	//public GameObject ground;
 	public int mapWidth, mapHeight;
@@ -41,9 +41,10 @@ public class MapGenerator : MonoBehaviour {
 
 		y++;
 	}
-
+	*/
 }
 	
+/*
 public class ClusterFinder{
 
 	private int n, m;
@@ -171,3 +172,4 @@ public class Coordinates
 		this.y = y;
 	}
 }
+*/

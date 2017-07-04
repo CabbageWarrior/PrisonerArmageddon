@@ -145,8 +145,13 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 4099222173384296, guid: 037ff2e88f9cf24499f610cd34f4bb1b, type: 2}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 114869131798666946, guid: 037ff2e88f9cf24499f610cd34f4bb1b,
+        type: 2}
+      propertyPath: mapGenerator
+      value: 
+      objectReference: {fileID: 1563635070}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 037ff2e88f9cf24499f610cd34f4bb1b, type: 2}
   m_IsPrefabParent: 0
@@ -177,7 +182,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1563635072
 MonoBehaviour:
@@ -190,6 +195,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5973cbd0fef8b646b09b723ffb78132, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mapWidth: 5
+  mapHeight: 5
+  groundPercBot: 10
+  waterPercLeft: 10
+  waterPercRight: 40
+  featuresScale: 5
+  threshold: 0.01
 --- !u!1 &2012943473
 GameObject:
   m_ObjectHideFlags: 0

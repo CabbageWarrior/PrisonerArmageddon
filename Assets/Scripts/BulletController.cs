@@ -3,6 +3,11 @@
 public class BulletController : MonoBehaviour
 {
     /// <summary>
+    /// Value of bullet damage.
+    /// </summary>
+     public float bulletDamage;
+
+    /// <summary>
     /// Global reference to the Rigidbody2D.
     /// </summary>
     private Rigidbody2D rb;
@@ -37,6 +42,7 @@ public class BulletController : MonoBehaviour
     /// </summary>
     void Start()
     {
+        bulletDamage = 10;
         rb = GetComponent<Rigidbody2D>();
     }
 
@@ -47,6 +53,7 @@ public class BulletController : MonoBehaviour
     /// </summary>
     void Update()
     {
+
         if (updateAngle)
         {
             // Direction angle given by velocity.
@@ -70,8 +77,9 @@ public class BulletController : MonoBehaviour
     /// Catches every collision 2D.
     /// </summary>
     /// <param name="coll">Collision Event arguments.</param>
-    void OnCollisionEnter2D(Collision2D coll)
+    private void OnCollisionEnter2D(Collision2D coll)
     {
+
         // When the bullet collides with another object, the bullet will explode,
         // but only if the collided object has some specific attributes.
         if (coll.collider.tag == "Ground")

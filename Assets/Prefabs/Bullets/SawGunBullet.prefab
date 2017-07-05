@@ -56,7 +56,7 @@ GameObject:
   - component: {fileID: 114577667345332622}
   m_Layer: 0
   m_Name: SawGunBullet
-  m_TagString: Untagged
+  m_TagString: Bullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -73,7 +73,7 @@ GameObject:
   - component: {fileID: 60604377632381956}
   m_Layer: 0
   m_Name: Sprite
-  m_TagString: Untagged
+  m_TagString: Bullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -177,7 +177,7 @@ PolygonCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -245,6 +245,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d3b31c3d8c44b4488c48b2122f34540, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bulletDamage: 5
   bulletSpriteTransform: {fileID: 4143166967596526}
   bulletSmoke: {fileID: 1283502628290252}
   destructionCircle: {fileID: 58119589285583950}

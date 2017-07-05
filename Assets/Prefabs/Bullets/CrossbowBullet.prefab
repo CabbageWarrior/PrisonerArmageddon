@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 114059408634856694}
   m_Layer: 0
   m_Name: CrossbowBullet
-  m_TagString: Untagged
+  m_TagString: Bullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -57,7 +57,7 @@ GameObject:
   - component: {fileID: 60164952028494072}
   m_Layer: 0
   m_Name: Sprite
-  m_TagString: Untagged
+  m_TagString: Bullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -177,7 +177,7 @@ PolygonCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
@@ -209,6 +209,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3d3b31c3d8c44b4488c48b2122f34540, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bulletDamage: 2
   bulletSpriteTransform: {fileID: 4607712004082560}
   bulletSmoke: {fileID: 1350477233590968}
   destructionCircle: {fileID: 58103427026812564}

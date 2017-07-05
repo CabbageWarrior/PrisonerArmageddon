@@ -7,7 +7,7 @@ public class PrisonerMovement : MonoBehaviour {
 
 	public float speed = 12f, maxVelocity = 3f, jumpForce = 4f, maxClimbAngle=60.0f;
 	public LayerMask whatIsGround;
-    public Text text1, text2;
+    //public Text text1, text2;
 
     //	private int whatIsGround = 1;
     private Rigidbody2D myBody;
@@ -97,9 +97,9 @@ public class PrisonerMovement : MonoBehaviour {
                 RaycastHit2D hitDownBack = Physics2D.Raycast(backRayTransform, Vector2.down, 3f, whatIsGround);
                 RaycastHit2D hitDownFront = Physics2D.Raycast(frontRayTransform, Vector2.down, 3f, whatIsGround);
                 distanceBack = hitDownBack.distance;
-				text1.text = distanceBack.ToString();
+				//text1.text = distanceBack.ToString();
                 distanceFront = hitDownFront.distance;
-				text2.text = distanceFront.ToString();
+				//text2.text = distanceFront.ToString();
                 distanceDifference = distanceBack - distanceFront;
                 slopeAngle = Mathf.Rad2Deg * Mathf.Atan(distanceDifference/prisonerWidth);
 

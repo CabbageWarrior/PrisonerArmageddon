@@ -7,7 +7,7 @@ public class WeaponController : MonoBehaviour {
 
 	Camera cam;
 
-	public float shotPower;
+    public float shotPower;
 	public GameObject weaponBullet;
 
 	private Transform bulletSpawnerTransform;

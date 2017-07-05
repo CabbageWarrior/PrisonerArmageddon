@@ -31,10 +31,12 @@ public class MapGenerator : MonoBehaviour {
 	{
 		float x = 0f, y = 0f;
 		while (y < mapProfile.height) {
+			x = 0f;
 			while (x < mapProfile.width) {
-				float xCoord = Mathf.Round (x / mapWidth * featuresScale);
-				float yCoord = Mathf.Round (y / mapWidth * featuresScale);
+				float xCoord = x / mapWidth * featuresScale;
+				float yCoord = y / mapHeight * featuresScale;
 				float sample = Mathf.PerlinNoise (xCoord, yCoord);
+				// Debug.Log (sample.ToString());
 				pixels [(int)x, (int)y] = sample;
 				x++;
 			}
@@ -61,6 +63,19 @@ public class MapGenerator : MonoBehaviour {
 		}
 	}
 
+	void TestFillColorArray()
+	{
+		int idx;
+		for (int i = 0; i < mapProfile.width-1; i++) 
+		{
+			for (int j = 0; j < mapProfile.height-1; j++) 
+			{	
+				idx = (i * mapProfile.height) + j;
+				pixelsColor [idx] = new Color(pixels[i,j], pixels[i,j], pixels[i,j]);
+			}
+		}
+	}
+
 	public Texture2D GetMapTexture()
 	{
 		//mapRenderer = ground.GetComponent<SpriteRenderer> ();
@@ -69,9 +84,10 @@ public class MapGenerator : MonoBehaviour {
 		pixelsColor = new Color[mapProfile.width * mapProfile.height];
 		percThresholds = new float[3]{groundPercBot, waterPercLeft, waterPercRight};
 		CalcNoise ();
-		clusterFinder = new ClusterFinder (pixels, mapProfile.width, mapProfile.height, threshold, percThresholds);
-		pixelsMask = clusterFinder.GetMask ();
-		FillColorArray ();
+		//clusterFinder = new ClusterFinder (pixels, mapProfile.width, mapProfile.height, threshold, percThresholds);
+		//pixelsMask = clusterFinder.GetMask ();
+		//FillColorArray ();
+		TestFillColorArray();
 		mapProfile.SetPixels(pixelsColor);
 		mapProfile.Apply();
 
@@ -104,6 +120,7 @@ public class ClusterFinder{
 		mask = new int[matrix.GetLength(0), matrix.GetLength(1)];
 		CalcMask ();
 		GetClusters ();
+		Debug.Log (allClustersList.Count.ToString());
 		UpdateMask ();
 	}
 
@@ -150,11 +167,11 @@ public class ClusterFinder{
 		for (int i = 0; i < allNeighbours.Length; i++)
 		{
 			coord = allNeighbours [i];
-			if (coord.x >=0 && coord.y >=0 && coord.x <=n && coord.y <=m && mask [coord.x, coord.y] == 1) 
+			if (coord.x >=0 && coord.y >=0 && coord.x < n && coord.y < m && mask [coord.x, coord.y] == 1) 
 			{
 				currentCluster.Add (coord);
-				mask [coord.x, coord.y] = 0;
-				FillCluster (x, y);
+				//mask [coord.x, coord.y] = 0;
+				FillCluster (coord.x, coord.y);
 				if (!currentCluster.isInThreshold && y > this.percThresholds [0] && x > this.percThresholds [1] && x < this.percThresholds [2])
 					currentCluster.isInThreshold = true;
 			}

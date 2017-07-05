@@ -15,6 +15,7 @@ public class MapGenerator : MonoBehaviour {
 	private int[,] pixelsMask;
 	private Color[] pixelsColor;
 	private float[] percThresholds;
+	private float randomX, randomY;
 	private ClusterFinder clusterFinder;
 
 	// Use this for initialization
@@ -29,14 +30,18 @@ public class MapGenerator : MonoBehaviour {
 
 	void CalcNoise()
 	{
+		randomX = Random.Range (0f, 100f);
+		randomY = Random.Range (0f, 100f);
+
 		float x = 0f, y = 0f;
 		while (y < mapProfile.height) {
 			x = 0f;
 			while (x < mapProfile.width) {
-				float xCoord = x / mapWidth * featuresScale;
-				float yCoord = y / mapHeight * featuresScale;
+				float xCoord = randomX + x / mapWidth * featuresScale;
+				float yCoord = randomY + y / mapHeight * featuresScale;
 				float sample = Mathf.PerlinNoise (xCoord, yCoord);
-				// Debug.Log (sample.ToString());
+				if (sample < threshold)
+					sample = 0f;
 				pixels [(int)x, (int)y] = sample;
 				x++;
 			}
@@ -66,11 +71,11 @@ public class MapGenerator : MonoBehaviour {
 	void TestFillColorArray()
 	{
 		int idx;
-		for (int i = 0; i < mapProfile.width-1; i++) 
+		for (int j = 0; j < mapProfile.height; j++) 
 		{
-			for (int j = 0; j < mapProfile.height-1; j++) 
+			for (int i = 0; i < mapProfile.width; i++) 
 			{	
-				idx = (i * mapProfile.height) + j;
+				idx = (j * mapProfile.width) + i;
 				pixelsColor [idx] = new Color(pixels[i,j], pixels[i,j], pixels[i,j]);
 			}
 		}
@@ -84,10 +89,10 @@ public class MapGenerator : MonoBehaviour {
 		pixelsColor = new Color[mapProfile.width * mapProfile.height];
 		percThresholds = new float[3]{groundPercBot, waterPercLeft, waterPercRight};
 		CalcNoise ();
-		//clusterFinder = new ClusterFinder (pixels, mapProfile.width, mapProfile.height, threshold, percThresholds);
-		//pixelsMask = clusterFinder.GetMask ();
-		//FillColorArray ();
-		TestFillColorArray();
+		clusterFinder = new ClusterFinder (pixels, mapProfile.width, mapProfile.height, percThresholds);
+		pixelsMask = clusterFinder.GetMask ();
+		FillColorArray ();
+		//TestFillColorArray();
 		mapProfile.SetPixels(pixelsColor);
 		mapProfile.Apply();
 
@@ -106,17 +111,17 @@ public class ClusterFinder{
 	private Cluster[] allClusters;
 	private Cluster currentCluster;
 	private Coordinates coord;
+    private MaskMatrix maskMatrix;
 
-	public ClusterFinder(float[,] matrix, int n, int m, float maskThreshold, float[] percThresholds)
+	public ClusterFinder(float[,] matrix, int n, int m, float[] percThresholds)
 	{
 		this.n = n;
 		this.m = m;
-		this.maskThreshold = maskThreshold;
 		this.matrix = matrix;
 		this.percThresholds = percThresholds;
 		this.percThresholds [0] = Mathf.Round(this.percThresholds [0] * m);
 		this.percThresholds [1] = Mathf.Round(this.percThresholds [1] * n); 
-		this.percThresholds [2] = Mathf.Round(this.percThresholds [2] * n); 
+		this.percThresholds [2] = Mathf.Round(n - this.percThresholds [2] * n); 
 		mask = new int[matrix.GetLength(0), matrix.GetLength(1)];
 		CalcMask ();
 		GetClusters ();
@@ -130,24 +135,31 @@ public class ClusterFinder{
 		{
 			for (int j = 0; j < m; j++) 
 			{
-				if (matrix[i,j] > maskThreshold)
+				if (matrix[i,j] != 0)
 					mask[i,j] = 1;
 				else
 					mask[i,j] = 0;
 			}
 		}
+
+        maskMatrix = new MaskMatrix(mask);
 	}
 
 	public void GetClusters()
 	{
+        MaskMatrixElement currentMatrixElement;
+
 		for (int i = 0; i < n; i++)
 		{
 			for (int j = 0; j < m; j++) 
 			{
-				if (mask [i, j] == 1) 
+
+                currentMatrixElement = maskMatrix.matrix[i, j];
+                currentMatrixElement.setIsPicked(true);
+
+                if (currentMatrixElement.value == 1) 
 				{
-					coord = new Coordinates(i, j);
-					currentCluster = new Cluster(coord);
+					currentCluster = new Cluster(currentMatrixElement.coord);
 					FillCluster (i, j);
 					currentCluster.CreateCoordinatesArray ();
 					allClustersList.Add (currentCluster);
@@ -161,21 +173,33 @@ public class ClusterFinder{
 	public void FillCluster(int x, int y)
 	{
 		Coordinates coord;
-		mask [x, y] = 0;
+        MaskMatrixElement currentMatrixElement;
+
 		Coordinates[] allNeighbours = getFirstNeighbours (x, y);
 
 		for (int i = 0; i < allNeighbours.Length; i++)
 		{
 			coord = allNeighbours [i];
-			if (coord.x >=0 && coord.y >=0 && coord.x < n && coord.y < m && mask [coord.x, coord.y] == 1) 
-			{
-				currentCluster.Add (coord);
-				//mask [coord.x, coord.y] = 0;
-				FillCluster (coord.x, coord.y);
-				if (!currentCluster.isInThreshold && y > this.percThresholds [0] && x > this.percThresholds [1] && x < this.percThresholds [2])
-					currentCluster.isInThreshold = true;
-			}
-		}
+            if (coord.x >= 0 && coord.y >= 0 && coord.x < n && coord.y < m)
+            { 
+                currentMatrixElement = maskMatrix.matrix[coord.x, coord.y];
+
+                if (!currentMatrixElement.coord.isPicked && currentMatrixElement.value == 1)
+                {
+                    currentMatrixElement.setIsPicked(true);
+                    currentCluster.Add(currentMatrixElement.coord);
+                    FillCluster(currentMatrixElement.coord.x, currentMatrixElement.coord.y);
+                    if (!currentCluster.isInThreshold && y < percThresholds[0] && x > percThresholds[1] && x < percThresholds[2])
+                        currentCluster.isInThreshold = true;
+                }
+                else
+                {
+                    currentMatrixElement.setIsPicked(true);
+                }
+
+            }
+
+        }
 	}
 
 	public Coordinates[] getFirstNeighbours(int x, int y)
@@ -286,10 +310,54 @@ public class Cluster
 public class Coordinates
 {
 	public int x, y;
+    public bool isPicked = false;
 
 	public Coordinates(int x, int y)
 	{
 		this.x = x;
 		this.y = y;
 	}
+}
+
+public class MaskMatrix
+{
+    public MaskMatrixElement[,] matrix;
+  
+    private int xdim, ydim;
+
+    public MaskMatrix(int[,] mask)
+    {
+        int value;
+        Coordinates coord;
+        xdim = mask.GetLength(0);
+        ydim = mask.GetLength(1);
+
+        matrix = new MaskMatrixElement[xdim, ydim];
+        for (int i=0; i < mask.GetLength(0); i++)
+        {
+            for (int j = 0; j < mask.GetLength(1); j++)
+            {
+                value = mask[i,j];
+                coord = new Coordinates(i, j);
+                matrix[i, j] = new MaskMatrixElement(coord, value);
+            }
+        }
+    }
+}
+
+public class MaskMatrixElement
+{
+    public Coordinates coord;
+    public float value;
+
+    public MaskMatrixElement(Coordinates coord, int value)
+    {
+        this.coord = coord;
+        this.value = value;
+    }
+
+    public void setIsPicked(bool isPicked)
+    {
+        coord.isPicked = isPicked;
+    }
 }

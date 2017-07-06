@@ -61,11 +61,16 @@ public class MapGenerator : MonoBehaviour {
 				if (pixelsMask [j, i] == 1) {
 					pixelsColor [idx] = Color.white;
 				}
-				else {
+                //else if (pixelsMask[j, i] == 2)
+                //{
+                //    pixelsColor[idx] = Color.red;
+                //}
+                else
+                {
 					pixelsColor [idx] = Color.black;
 					pixelsColor [idx].a = 0f;
 				}
-			}
+            }
 		}
 	}
 
@@ -122,9 +127,9 @@ public class ClusterFinder{
 		this.m = m;
 		this.matrix = matrix;
 		this.percThresholds = percThresholds;
-		this.percThresholds [0] = Mathf.Round(this.percThresholds [0] * m);
-		this.percThresholds [1] = Mathf.Round(this.percThresholds [1] * n); 
-		this.percThresholds [2] = Mathf.Round(n - this.percThresholds [2] * n); 
+		this.percThresholds [0] = Mathf.Round(this.percThresholds [0] * m / 100f);
+		this.percThresholds [1] = Mathf.Round(this.percThresholds [1] * n / 100f); 
+		this.percThresholds [2] = Mathf.Round(n - this.percThresholds [2] * n / 100f); 
 		mask = new int[matrix.GetLength(0), matrix.GetLength(1)];
 		CalcMask ();
 		GetClusters ();
@@ -164,13 +169,15 @@ public class ClusterFinder{
                     currentMatrixElement.setIsPicked(true);
                     currentCluster = new Cluster(currentMatrixElement.coord);
 					FillCluster (i, j);
+                    if (currentCluster.isAtEdge == true)
+                        currentCluster.isInThreshold = false;
 					currentCluster.CreateCoordinatesArray ();
 					allClustersList.Add (currentCluster);
 				}
 			}
 		}
 
-		CreateClustersArray ();
+        CreateClustersArray();
 	}
 
 	public void FillCluster(int x, int y)
@@ -200,8 +207,10 @@ public class ClusterFinder{
                         neighbourMatrixElement.setIsPicked(true);
                         currentCluster.Add(neighbourMatrixElement.coord);
                         clusterElements.Add(neighbourMatrixElement);
-                        if (!currentCluster.isInThreshold && coord.y > percThresholds[0] && coord.x > percThresholds[1] && coord.x < percThresholds[2])
+                        if (!currentCluster.isInThreshold && coord.y < percThresholds[0] && coord.x > percThresholds[1] && coord.x < percThresholds[2])
                             currentCluster.isInThreshold = true;
+                        if (coord.x == 0 || coord.x == n-1 || coord.y == m-1)
+                            currentCluster.isAtEdge = true;
                     }
                     else
                     {
@@ -266,21 +275,28 @@ public class ClusterFinder{
 		Coordinates[] updateCoordinates;
 		int clustersNbr = allClusters.Length;
 		int pointsNbr;
+        int nbrOfDeletedClusters = 0, nbrOfDeletedPoints = 0;
 		for (int i=0; i<clustersNbr; i++)
 		{
 			updateCluster = allClusters[i];
 			if (!updateCluster.getIsInThreshold()) 
-			{	
-				updateCoordinates = currentCluster.getAllCoordinates ();
+			{
+                nbrOfDeletedClusters += 1;
+                updateCoordinates = updateCluster.getAllCoordinates ();
 				pointsNbr = updateCoordinates.Length;
 				for (int j=0; j<pointsNbr; j++)
 				{
 					coord = updateCoordinates [j];
-					mask[coord.x, coord.y] = 0;
-				}
+					//mask[coord.x, coord.y] = 0;
+                    mask[coord.x, coord.y] = 2;
+                    nbrOfDeletedPoints += 1;
+
+                }
 			}
 		}
-	}
+        Debug.Log(nbrOfDeletedClusters.ToString());
+        Debug.Log(nbrOfDeletedPoints.ToString());
+    }
 
 	public int[,] GetMask()
 	{	
@@ -291,7 +307,7 @@ public class ClusterFinder{
 
 public class Cluster
 {
-	public bool isInThreshold;
+	public bool isInThreshold, isAtEdge;
 
 	private List<Coordinates> allCoordinatesList = new List<Coordinates>();
 	private Coordinates[] allCoordinates;
@@ -300,7 +316,9 @@ public class Cluster
 	{
 		Add (coord);
 		isInThreshold = false;
-	}
+        isAtEdge = false;
+
+    }
 
 	public void Add(Coordinates coord)
 	{

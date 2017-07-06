@@ -2,6 +2,9 @@
 
 public class GroundController : MonoBehaviour
 {
+
+    public GameObject mapGenerator;
+
     // Reference variable for the SpriteRenderer component.
     private SpriteRenderer spriteRenderer;
 
@@ -13,15 +16,16 @@ public class GroundController : MonoBehaviour
 
     // Utilities: Transparent color.
     private Color colorTransparent;
-    
+
+
     /// <summary>
     /// Start method.
     /// </summary>
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        
-        Texture2D textureOriginal = (Texture2D)Resources.Load("ground2");
+
+        Texture2D textureOriginal = mapGenerator.GetComponent<MapGenerator>().GetMapTexture();
         // Resources.Load("nome_do_arquivo") carrega um arquivo localizado
         // em Assets/Resources
         Texture2D tex_clone = (Texture2D)Instantiate(textureOriginal);
@@ -66,7 +70,7 @@ public class GroundController : MonoBehaviour
 
         // Collider ray.
         int colliderRay = Mathf.RoundToInt(destroyerCircleCollider.bounds.size.x * groundImgPixelWidth / groundTotalWidth);
-        
+
         int x, y, px, nx, py, ny, verticalCathetus;
 
         // Moving X from 0 to the collider ray length...
@@ -91,10 +95,10 @@ public class GroundController : MonoBehaviour
                 // For every singlecoordinate found by combining positive and negative X's and Y's,
                 // I am going to override the pixel positioned in that coordinate with
                 // the transparent color.
-                spriteRenderer.sprite.texture.SetPixel(px, py, colorTransparent);
-                spriteRenderer.sprite.texture.SetPixel(nx, py, colorTransparent);
-                spriteRenderer.sprite.texture.SetPixel(px, ny, colorTransparent);
-                spriteRenderer.sprite.texture.SetPixel(nx, ny, colorTransparent);
+                if ((px >= 0 && px <= groundImgPixelWidth) && (py >= 0 && py <= groundImgPixelHeight)) { spriteRenderer.sprite.texture.SetPixel(px, py, colorTransparent); }
+                if ((nx >= 0 && nx <= groundImgPixelWidth) && (py >= 0 && py <= groundImgPixelHeight)) { spriteRenderer.sprite.texture.SetPixel(nx, py, colorTransparent); }
+                if ((px >= 0 && px <= groundImgPixelWidth) && (ny >= 0 && ny <= groundImgPixelHeight)) { spriteRenderer.sprite.texture.SetPixel(px, ny, colorTransparent); }
+                if ((nx >= 0 && nx <= groundImgPixelWidth) && (ny >= 0 && ny <= groundImgPixelHeight)) { spriteRenderer.sprite.texture.SetPixel(nx, ny, colorTransparent); }
             }
         }
         // Now I'll apply those updates on the texture. That's why I operate on a clone
@@ -128,7 +132,8 @@ public class GroundController : MonoBehaviour
     /// <summary>
     /// Resets the collider in order to fit the texture.
     /// </summary>
-    private void ResetPolygonCollider2D() {
+    private void ResetPolygonCollider2D()
+    {
         // Simple and funny: destroy and recreate.
         Destroy(GetComponent<PolygonCollider2D>());
         gameObject.AddComponent<PolygonCollider2D>();

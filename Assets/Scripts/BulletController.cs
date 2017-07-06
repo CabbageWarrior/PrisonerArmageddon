@@ -3,6 +3,11 @@
 public class BulletController : MonoBehaviour
 {
     /// <summary>
+    /// Value of bullet damage.
+    /// </summary>
+    public float bulletDamage;
+
+    /// <summary>
     /// Global reference to the Rigidbody2D.
     /// </summary>
     private Rigidbody2D rb;
@@ -11,7 +16,7 @@ public class BulletController : MonoBehaviour
     /// Transform component of the Sprite into the Bullet object.
     /// </summary>
     public Transform bulletSpriteTransform;
-    
+
     /// <summary>
     /// Bool that says whether or not to update the rotation of the GameObject Sprite based on the trajectory of the bullet. This bool is to say that after the bullet collides with some other body, the rotation of the bullet should no longer be updated based on the trajectory.
     /// </summary>
@@ -40,13 +45,14 @@ public class BulletController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-        //rb.velocity = new Vector2(5f, 10f);
+    //rb.velocity = new Vector2(5f, 10f);
 
     /// <summary>
     /// Update method.
     /// </summary>
     void Update()
     {
+
         if (updateAngle)
         {
             // Direction angle given by velocity.
@@ -62,7 +68,7 @@ public class BulletController : MonoBehaviour
             //Debug.Log("angle = " + angle);
 
             // Update of the Euler angles of the Sprite contained into the Bullet object.
-			bulletSpriteTransform.localEulerAngles = new Vector3(0f, 0f, angle); // + 45f);
+            bulletSpriteTransform.localEulerAngles = new Vector3(0f, 0f, angle); // + 45f);
         }
     }
 
@@ -70,16 +76,30 @@ public class BulletController : MonoBehaviour
     /// Catches every collision 2D.
     /// </summary>
     /// <param name="coll">Collision Event arguments.</param>
-    void OnCollisionEnter2D(Collision2D coll)
+    private void OnCollisionEnter2D(Collision2D coll)
     {
+
         // When the bullet collides with another object, the bullet will explode,
         // but only if the collided object has some specific attributes.
-        if (coll.collider.tag == "Ground")
+        switch (coll.collider.tag)
         {
-            updateAngle = false;
-            bulletSmoke.SetActive(false);
-            groundController.DestroyGround(destructionCircle);
-            Destroy(gameObject);
+            case "Ground":
+                groundController.DestroyGround(destructionCircle);
+
+                updateAngle = false;
+                bulletSmoke.SetActive(false);
+                Destroy(gameObject);
+                break;
+            case "Player":
+                groundController.DestroyGround(destructionCircle);
+
+                updateAngle = false;
+                bulletSmoke.SetActive(false);
+                Destroy(gameObject);
+
+                coll.gameObject.GetComponent<DamageController>().SubtractLifePoints(bulletDamage);
+                break;
         }
+
     }
 }

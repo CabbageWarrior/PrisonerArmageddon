@@ -8,6 +8,13 @@ public class PrisonerBehavior : MonoBehaviour {
 
 	private Transform weaponAnchorTransform;
 
+	[SerializeField] private int characterNumber;
+	public int CharacterNumber { 
+		get { 
+			return characterNumber;
+		} 
+	}
+
 	// Use this for initialization
 	void Start () {
 		weaponAnchorTransform = transform.Find ("WeaponAnchor").transform;

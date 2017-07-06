@@ -29,9 +29,9 @@ public class DamageController : MonoBehaviour {
     {
         if (other.gameObject.tag == "Bullet")
         {
-            Debug.Log("ho colliso");
+            Debug.Log("ho colliso --> " + other.GetComponent<BulletController>().bulletDamage.ToString());
+            currentLife -= other.GetComponent<BulletController>().bulletDamage;
             Destroy(other.gameObject);
-            currentLife -= other.gameObject.GetComponent<BulletController>().bulletDamage;
         }
     }
 

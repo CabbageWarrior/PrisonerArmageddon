@@ -1,6 +1,11 @@
 fileFormatVersion: 2
+<<<<<<< HEAD:Assets/Scripts/MapGenerator.cs.rej.meta
 guid: 9a361c2472c532140be2b8ecaf1ba9cd
 timeCreated: 1499242734
+=======
+guid: eacc755fa3166a645b7ad6b326e0a7cd
+timeCreated: 1499240266
+>>>>>>> 5318da40ffb1e8414f67ba4d2009c1ba9f7626ae:Assets/Scripts/MapGenerator.cs.rej.meta
 licenseType: Free
 DefaultImporter:
   userData: 

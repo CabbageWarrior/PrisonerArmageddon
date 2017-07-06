@@ -1,11 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class DamageController : MonoBehaviour {
 
     public Animator anim;
-    public float life = 10;
+    public float life;
     public float currentLife;
     
 
@@ -29,9 +30,8 @@ public class DamageController : MonoBehaviour {
     {
         if (other.gameObject.tag == "Bullet")
         {
-            Debug.Log("ho colliso --> " + other.GetComponent<BulletController>().bulletDamage.ToString());
-            currentLife -= other.GetComponent<BulletController>().bulletDamage;
             Destroy(other.gameObject);
+            currentLife -= other.GetComponentInParent<BulletController>().bulletDamage;
         }
     }
 

@@ -42,7 +42,6 @@ public class BulletController : MonoBehaviour
     /// </summary>
     void Start()
     {
-        bulletDamage = 10;
         rb = GetComponent<Rigidbody2D>();
     }
 
@@ -86,7 +85,7 @@ public class BulletController : MonoBehaviour
         {
             updateAngle = false;
             bulletSmoke.SetActive(false);
-            groundController.DestroyGround(destructionCircle);
+            //groundController.DestroyGround(destructionCircle);
             Destroy(gameObject);
         }
     }

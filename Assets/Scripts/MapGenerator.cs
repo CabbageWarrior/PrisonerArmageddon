@@ -95,7 +95,8 @@ public class MapGenerator : MonoBehaviour {
 		FillColorArray ();
 		//TestFillColorArray();
 		mapProfile.SetPixels(pixelsColor);
-		mapProfile.Apply();
+        mapProfile.anisoLevel = 16;
+		mapProfile.Apply(true);
 
 		return mapProfile;
 	}

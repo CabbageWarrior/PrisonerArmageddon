@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MapGenerator : MonoBehaviour {
@@ -52,12 +53,12 @@ public class MapGenerator : MonoBehaviour {
 	void FillColorArray()
 	{	
 		int idx;
-		for (int i = 0; i < mapProfile.width; i++) 
+		for (int i = 0; i < mapProfile.height; i++) 
 		{
-			for (int j = 0; j < mapProfile.height; j++) 
+			for (int j = 0; j < mapProfile.width; j++) 
 			{	
 				idx = (i * mapProfile.width) + j;
-				if (pixelsMask [i, j] == 1) {
+				if (pixelsMask [j, i] == 1) {
 					pixelsColor [idx] = Color.white;
 				}
 				else {
@@ -108,7 +109,8 @@ public class ClusterFinder{
 	private float[,] matrix;
 	private int[,] mask;
 	private List<Cluster> allClustersList = new List<Cluster>();
-	private Cluster[] allClusters;
+    private List<MaskMatrixElement> clusterElements = new List<MaskMatrixElement>();
+    private Cluster[] allClusters;
 	private Cluster currentCluster;
 	private Coordinates coord;
     private MaskMatrix maskMatrix;
@@ -155,11 +157,11 @@ public class ClusterFinder{
 			{
 
                 currentMatrixElement = maskMatrix.matrix[i, j];
-                currentMatrixElement.setIsPicked(true);
-
-                if (currentMatrixElement.value == 1) 
+                
+                if (!currentMatrixElement.coord.isPicked && currentMatrixElement.value == 1) 
 				{
-					currentCluster = new Cluster(currentMatrixElement.coord);
+                    currentMatrixElement.setIsPicked(true);
+                    currentCluster = new Cluster(currentMatrixElement.coord);
 					FillCluster (i, j);
 					currentCluster.CreateCoordinatesArray ();
 					allClustersList.Add (currentCluster);
@@ -173,34 +175,48 @@ public class ClusterFinder{
 	public void FillCluster(int x, int y)
 	{
 		Coordinates coord;
-        MaskMatrixElement currentMatrixElement;
+        Coordinates[] allNeighbours;
+        MaskMatrixElement currentMatrixElement, neighbourMatrixElement;
 
-		Coordinates[] allNeighbours = getFirstNeighbours (x, y);
+        currentMatrixElement = maskMatrix.matrix[x, y];
+        clusterElements.Add(maskMatrix.matrix[x, y]);
 
-		for (int i = 0; i < allNeighbours.Length; i++)
-		{
-			coord = allNeighbours [i];
-            if (coord.x >= 0 && coord.y >= 0 && coord.x < n && coord.y < m)
-            { 
-                currentMatrixElement = maskMatrix.matrix[coord.x, coord.y];
+        int i = 0;
+        while (i < clusterElements.Count)
+        {
+            currentMatrixElement = clusterElements.ElementAt(i);
+            allNeighbours = getFirstNeighbours(currentMatrixElement.coord.x, currentMatrixElement.coord.y);
 
-                if (!currentMatrixElement.coord.isPicked && currentMatrixElement.value == 1)
+            for (int j = 0; j < allNeighbours.Length; j++)
+            {
+                coord = allNeighbours[j];
+                if (coord.x >= 0 && coord.y >= 0 && coord.x < n && coord.y < m)
                 {
-                    currentMatrixElement.setIsPicked(true);
-                    currentCluster.Add(currentMatrixElement.coord);
-                    FillCluster(currentMatrixElement.coord.x, currentMatrixElement.coord.y);
-                    if (!currentCluster.isInThreshold && y < percThresholds[0] && x > percThresholds[1] && x < percThresholds[2])
-                        currentCluster.isInThreshold = true;
-                }
-                else
-                {
-                    currentMatrixElement.setIsPicked(true);
+                    neighbourMatrixElement = maskMatrix.matrix[coord.x, coord.y];
+
+                    if (!neighbourMatrixElement.coord.isPicked && neighbourMatrixElement.value == 1)
+                    {
+                        neighbourMatrixElement.setIsPicked(true);
+                        currentCluster.Add(neighbourMatrixElement.coord);
+                        clusterElements.Add(neighbourMatrixElement);
+                        if (!currentCluster.isInThreshold && coord.y > percThresholds[0] && coord.x > percThresholds[1] && coord.x < percThresholds[2])
+                            currentCluster.isInThreshold = true;
+                    }
+                    else
+                    {
+                        currentMatrixElement.setIsPicked(true);
+                    }
+
                 }
 
             }
 
+            i++;
         }
-	}
+
+        clusterElements.Clear();
+
+    }
 
 	public Coordinates[] getFirstNeighbours(int x, int y)
 	{	

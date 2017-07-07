@@ -4,18 +4,26 @@ using UnityEngine;
 
 public class PrisonerBehavior : MonoBehaviour
 {
-
+    public static bool[] Team1Prisoners, Team2Prisoners;
     public GameObject gameManager;
     public int teamNumber, teamElementNumber;
-    public static bool[] Team1Prisoners, Team2Prisoners;
+    public bool isAlreadyShooted = true;
 
+    public static int currentTeam, team1CurrentPlayer, team2CurrentPlayer, playersPerTeam;
     private Transform weaponAnchorTransform;
 
-    private int team1CurrentPlayer, team2CurrentPlayer, playersPerTeam;
+    public bool isActive {
+        get {
+            return (teamNumber == currentTeam && ((currentTeam == 1 && teamElementNumber == team1CurrentPlayer) || (currentTeam == 2 && teamElementNumber == team2CurrentPlayer)));
+        }
+    }
 
-    private void Awake()
+    void Awake()
     {
         playersPerTeam = GameObject.Find("PrisonerSpawner").GetComponent<SpawnerController>().playersPerTeam;
+
+        team1CurrentPlayer = Random.Range(0, playersPerTeam);
+        team2CurrentPlayer = Random.Range(0, playersPerTeam);
 
         Team1Prisoners = new bool[playersPerTeam];
         Team2Prisoners = new bool[playersPerTeam];
@@ -30,18 +38,21 @@ public class PrisonerBehavior : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        if (!TurnManager.isTurnFinishing && isActive)
         {
-            gameManager.GetComponent<MenuManager>().ToggleWeaponMenu(this.gameObject);
-        }
-
-        if (Input.GetMouseButtonUp(0))
-        {
-            foreach (Transform child in weaponAnchorTransform)
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             {
-                if (child.tag == "Weapon")
+                gameManager.GetComponent<MenuManager>().ToggleWeaponMenu(this.gameObject);
+            }
+
+            if (gameManager.GetComponent<MenuManager>().playerRef == null && Input.GetMouseButtonUp(0))
+            {
+                foreach (Transform child in weaponAnchorTransform)
                 {
-                    child.GetComponent<WeaponController>().ShotBullet();
+                    if (child.tag == "Weapon")
+                    {
+                        child.GetComponent<WeaponController>().ShotBullet();
+                    }
                 }
             }
         }
@@ -62,7 +73,7 @@ public class PrisonerBehavior : MonoBehaviour
         }
     }
 
-    int GetNext(int teamNumber)
+    public static int GetNext(int teamNumber)
     {
         bool[] currentArray;
         int prevCharacter;
@@ -91,7 +102,8 @@ public class PrisonerBehavior : MonoBehaviour
         }
 
         // Se sono tutti morti restituisco -1.
-        if (!isTeamWithAliveElements) {
+        if (!isTeamWithAliveElements)
+        {
             return -1;
         }
 
@@ -119,6 +131,7 @@ public class PrisonerBehavior : MonoBehaviour
         {
             team2CurrentPlayer = prevCharacter;
         }
+        currentTeam = teamNumber;
 
         // Restituisco il valore corretto al chiamante.
         return prevCharacter;

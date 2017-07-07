@@ -6,7 +6,7 @@ public class MenuManager : MonoBehaviour {
 
 	public GameObject weaponMenu;
 
-	private GameObject playerRef;
+	public GameObject playerRef;
 
 	//// Use this for initialization
 	//void Start () {

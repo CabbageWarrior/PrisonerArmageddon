@@ -93,20 +93,22 @@ public class WeaponController : MonoBehaviour
 
         }
 
-
-        // Progress Bar changes on input.
-        if (Input.GetMouseButtonDown(0))
+        if (!TurnManager.isTurnFinishing && transform.parent.parent.GetComponent<PrisonerBehavior>().isAlreadyShooted == false)
         {
-            initialMousePosition = Input.mousePosition;
-        }
+            // Progress Bar changes on input.
+            if (Input.GetMouseButtonDown(0))
+            {
+                initialMousePosition = Input.mousePosition;
+            }
 
-        if (Input.GetMouseButton(0))
-        {
+            if (Input.GetMouseButton(0))
+            {
 
-            //float barLength;
-            //barLength = Mathf.Clamp (Input.mousePosition.x - initialMousePosition.x, 0f, baseTexture.width);
-            UpdateBarLength();
-            progressBarRenderer.sprite = UpdatedProgressSprite(barLength);
+                //float barLength;
+                //barLength = Mathf.Clamp (Input.mousePosition.x - initialMousePosition.x, 0f, baseTexture.width);
+                UpdateBarLength();
+                progressBarRenderer.sprite = UpdatedProgressSprite(barLength);
+            }
         }
 
         if (Input.GetMouseButtonUp(0))
@@ -120,8 +122,10 @@ public class WeaponController : MonoBehaviour
     /// </summary>
     public void ShotBullet()
     {
-        if (pointerTransform != null && bulletSpawnerTransform != null)
+        if (pointerTransform != null && bulletSpawnerTransform != null && transform.parent.parent.GetComponent<PrisonerBehavior>().isAlreadyShooted == false)
         {
+            transform.parent.parent.GetComponent<PrisonerBehavior>().isAlreadyShooted = true;
+
             float AngleDeg = Mathf.Atan2(pointerTransform.position.y - bulletSpawnerTransform.position.y, pointerTransform.position.x - bulletSpawnerTransform.position.x);
             Vector2 newImpulse = new Vector2(Mathf.Cos(AngleDeg), Mathf.Sin(AngleDeg)) * shotPower * barLength / progressBarBaseTexture.width;
 
@@ -130,6 +134,9 @@ public class WeaponController : MonoBehaviour
 
             // Add impulse to new bullet.
             projectile.GetComponent<Rigidbody2D>().AddForce(newImpulse, ForceMode2D.Impulse);
+
+            // Set fine turno
+            TurnManager.turnFinishTimeout = TurnManager.endTurnTimeoutSeconds;
         }
     }
 

@@ -5,7 +5,12 @@ using UnityEngine;
 public class TurnManager : MonoBehaviour
 {
     public GameObject mainCamera;
+    public static float endTurnTimeoutSeconds = 5;
 
+
+    public static float turnFinishTimeout = -1;
+    public static bool isTurnFinishing = false;
+    
     
     Transform currentActivePlayerTransform;
     
@@ -24,9 +29,16 @@ public class TurnManager : MonoBehaviour
             mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, newCameraPosition, 5f * Time.deltaTime);
         }
 
-        if (Input.GetKeyUp(KeyCode.Space))
+        if (turnFinishTimeout > 0)
         {
-            SetActivePlayer(Random.Range(1, 2), Random.Range(0, 3));
+            isTurnFinishing = true;
+            turnFinishTimeout -= Time.deltaTime;
+        }
+        else if (isTurnFinishing == true)
+        {
+            int nextTeam = (PrisonerBehavior.currentTeam == 1 ? 2 : 1);
+            SetActivePlayer(nextTeam, PrisonerBehavior.GetNext(nextTeam));
+            isTurnFinishing = false;
         }
     }
 
@@ -50,6 +62,16 @@ public class TurnManager : MonoBehaviour
             if (loopPrisonerBehavior.teamNumber == teamNumber && loopPrisonerBehavior.teamElementNumber == teamElementNumber)
             {
                 currentActivePlayerTransform = prisoner.transform;
+                PrisonerBehavior.currentTeam = teamNumber;
+                prisoner.GetComponent<PrisonerBehavior>().isAlreadyShooted = false;
+                if (teamNumber == 1)
+                {
+                    PrisonerBehavior.team1CurrentPlayer = prisoner.GetComponent<PrisonerBehavior>().teamElementNumber;
+                }
+                else
+                {
+                    PrisonerBehavior.team2CurrentPlayer = prisoner.GetComponent<PrisonerBehavior>().teamElementNumber;
+                }
             }
         }
     }

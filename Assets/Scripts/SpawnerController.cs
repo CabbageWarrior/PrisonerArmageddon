@@ -13,7 +13,8 @@ public class SpawnerController : MonoBehaviour
     public LayerMask whatIsGround;
 
     //// Use this for initialization
-    void Start()
+    // NB. Nello Start le cose vengono inizializzate dopo l'utilizzo.
+    void Awake()
     {
         circleCollider2D = GetComponent<CircleCollider2D>();
         team1Animator = (RuntimeAnimatorController)Resources.Load("Animators/Team1Prisoner");

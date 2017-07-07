@@ -43,7 +43,7 @@ public class PrisonerMovement : MonoBehaviour {
 
         float distanceBack, distanceFront, distanceDifference;
         float vel = myBody.velocity.x;
-        Vector2 backRayTransform, frontRayTransform;
+        Vector2 backRayTransform = transform.position, frontRayTransform = transform.position;
 
         float horizontalInput = Input.GetAxisRaw("Horizontal");
         int raycastsCollisionsState;

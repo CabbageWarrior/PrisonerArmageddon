@@ -8,15 +8,15 @@ public class MenuManager : MonoBehaviour {
 
 	private GameObject playerRef;
 
-	// Use this for initialization
-	void Start () {
+	//// Use this for initialization
+	//void Start () {
 		
-	}
+	//}
 	
-	// Update is called once per frame
-	void Update () {
+	//// Update is called once per frame
+	//void Update () {
 		
-	}
+	//}
 
 	#region Weapon Menu
 	/// <summary>

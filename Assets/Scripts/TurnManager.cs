@@ -2,33 +2,55 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TurnManager : MonoBehaviour {
+public class TurnManager : MonoBehaviour
+{
+    public GameObject mainCamera;
 
-	GameObject[] Players;
-	Transform currentActivePlayerTransform;
-	Transform cameraTransform;
+    
+    Transform currentActivePlayerTransform;
+    
+    //// Use this for initialization
+    //void Start()
+    //{
+    //
+    //}
 
-	// Use this for initialization
-	void Start () {
-		Players = GameObject.FindGameObjectsWithTag ("Player");
-		SetActivePlayer (Random.Range (0, Players.Length));
+    // Update is called once per frame
+    void Update()
+    {
+        if (currentActivePlayerTransform != null)
+        {
+            Vector3 newCameraPosition = new Vector3(currentActivePlayerTransform.position.x, currentActivePlayerTransform.position.y, mainCamera.transform.position.z);
+            mainCamera.transform.position = Vector3.Lerp(mainCamera.transform.position, newCameraPosition, 5f * Time.deltaTime);
+        }
 
-		cameraTransform = transform.GetChild (0);
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		Vector3 newCameraPosition = new Vector3 (currentActivePlayerTransform.position.x, currentActivePlayerTransform.position.y, cameraTransform.position.z);
-		cameraTransform.position = Vector3.Lerp (cameraTransform.position, newCameraPosition, 5f * Time.deltaTime);
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            SetActivePlayer(Random.Range(1, 2), Random.Range(0, 3));
+        }
+    }
 
-		if (Input.GetKeyUp (KeyCode.Space)) {
-			SetActivePlayer (Random.Range (0, Players.Length));
-		}
-	}
+    public void SetActivePlayer(int teamNumber, int teamElementNumber)
+    {
+        bool[] currentArray;
 
-	void SetActivePlayer(int playerNumber) {
-		if (Players [playerNumber]) {
-			currentActivePlayerTransform = Players [playerNumber].transform;
-		}
-	}
+        if (teamNumber == 1)
+        {
+            currentArray = PrisonerBehavior.Team1Prisoners;
+        }
+        else
+        {
+            currentArray = PrisonerBehavior.Team2Prisoners;
+        }
+
+        PrisonerBehavior loopPrisonerBehavior;
+        foreach (GameObject prisoner in GameObject.FindGameObjectsWithTag("Player"))
+        {
+            loopPrisonerBehavior = prisoner.GetComponent<PrisonerBehavior>();
+            if (loopPrisonerBehavior.teamNumber == teamNumber && loopPrisonerBehavior.teamElementNumber == teamElementNumber)
+            {
+                currentActivePlayerTransform = prisoner.transform;
+            }
+        }
+    }
 }

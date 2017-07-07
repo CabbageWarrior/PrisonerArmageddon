@@ -22,15 +22,22 @@ public class MapGenerator : MonoBehaviour {
     private Sprite bkgSprite;
     private SpriteRenderer bkgRenderer;
 
+<<<<<<< HEAD
     // Use this for initialization
     void Start () {
 
     }
+=======
+	//// Use this for initialization
+	//void Start () {
+
+	//}
+>>>>>>> origin/master
 	
-	// Update is called once per frame
-	void Update () {
+	//// Update is called once per frame
+	//void Update () {
 		
-	}
+	//}
 
 	void CalcNoise()
 	{

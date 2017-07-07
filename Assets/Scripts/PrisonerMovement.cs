@@ -84,8 +84,8 @@ public class PrisonerMovement : MonoBehaviour {
                 {
                     myBody.velocity = new Vector2(0, 0);
                 }
-                //backRayTransform = new Vector2(transform.position.x - rayShift, transform.position.y);
-                //frontRayTransform = new Vector2(transform.position.x + rayShift, transform.position.y);
+                backRayTransform = new Vector2(transform.position.x - rayShift, transform.position.y);
+                frontRayTransform = new Vector2(transform.position.x + rayShift, transform.position.y);
             }
 
             if (vel != 0)

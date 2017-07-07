@@ -9,20 +9,30 @@ public class MapGenerator : MonoBehaviour {
 	//public GameObject ground;
 	public int mapWidth, mapHeight;
 	public float groundPercBot, waterPercLeft, waterPercRight, featuresScale, threshold;
+    public GameObject background;
 
 	//private SpriteRenderer mapRenderer;
-	private Texture2D mapProfile;
+	private Texture2D mapProfile, origMapProfile;
 	private float[,] pixels;
 	private int[,] pixelsMask;
 	private Color[] pixelsColor;
 	private float[] percThresholds;
 	private float randomX, randomY;
 	private ClusterFinder clusterFinder;
+    private Sprite bkgSprite;
+    private SpriteRenderer bkgRenderer;
 
+<<<<<<< HEAD
+    // Use this for initialization
+    void Start () {
+
+    }
+=======
 	//// Use this for initialization
 	//void Start () {
 
 	//}
+>>>>>>> origin/master
 	
 	//// Update is called once per frame
 	//void Update () {
@@ -52,24 +62,33 @@ public class MapGenerator : MonoBehaviour {
 
 	void FillColorArray()
 	{	
-		int idx;
-		for (int i = 0; i < mapProfile.height; i++) 
+		int idx, idx2, pxTexture;
+        Color[] basePixels = origMapProfile.GetPixels();
+
+        Color colorTransparent = new Color(0f, 0f, 0f, 0f);
+        pxTexture = (int)Mathf.Sqrt(basePixels.Length);
+
+        for (int i = 0; i < mapProfile.height; i++) 
 		{
 			for (int j = 0; j < mapProfile.width; j++) 
-			{	
-				idx = (i * mapProfile.width) + j;
-				if (pixelsMask [j, i] == 1) {
-					pixelsColor [idx] = Color.white;
-				}
+			{
+                idx = (i * mapProfile.width) + j;
+                if (pixelsMask[j, i] == 1)
+                {
+                    idx2 = (i % pxTexture) * pxTexture + j % pxTexture;
+                    pixelsColor[idx] = basePixels[idx2];
+                }
                 //else if (pixelsMask[j, i] == 2)
                 //{
                 //    pixelsColor[idx] = Color.red;
                 //}
                 else
                 {
-					pixelsColor [idx] = Color.black;
-					pixelsColor [idx].a = 0f;
-				}
+                    pixelsColor[idx] = Color.black;
+                    pixelsColor[idx].a = 0f;
+                }
+
+
             }
 		}
 	}
@@ -89,17 +108,59 @@ public class MapGenerator : MonoBehaviour {
 
 	public Texture2D GetMapTexture()
 	{
-		//mapRenderer = ground.GetComponent<SpriteRenderer> ();
-		mapProfile = new Texture2D (mapWidth, mapHeight);
-		pixels = new float[mapProfile.width, mapProfile.height];
-		pixelsColor = new Color[mapProfile.width * mapProfile.height];
-		percThresholds = new float[3]{groundPercBot, waterPercLeft, waterPercRight};
-		CalcNoise ();
-		clusterFinder = new ClusterFinder (pixels, mapProfile.width, mapProfile.height, percThresholds);
-		pixelsMask = clusterFinder.GetMask ();
-		FillColorArray ();
-		//TestFillColorArray();
-		mapProfile.SetPixels(pixelsColor);
+        //mapRenderer = ground.GetComponent<SpriteRenderer> ();
+        int bkgNbr = Random.Range(0, 3);
+        int colorNbr = Random.Range(0, 4);
+        bkgRenderer = background.GetComponent<SpriteRenderer>();
+
+        switch (bkgNbr)
+        {
+            case 0:
+                bkgSprite = Resources.Load<Sprite>("background_faded_light");
+                bkgRenderer.sprite = bkgSprite;
+                break;
+            case 1:
+                bkgSprite = Resources.Load<Sprite>("background_faded_light_2");
+                bkgRenderer.sprite = bkgSprite;
+                break;
+            case 2:
+                bkgSprite = Resources.Load<Sprite>("background_faded_light_3");
+                bkgRenderer.sprite = bkgSprite;
+                break;
+            default:
+                break;
+        }
+
+        background.transform.localScale += new Vector3(0.5f, 0f, 0f);
+
+        switch (colorNbr)
+        {
+            case 0:
+                origMapProfile = (Texture2D)Resources.Load("rock_01");
+                break;
+            case 1:
+                origMapProfile = (Texture2D)Resources.Load("rock_02");
+                break;
+            case 2:
+                origMapProfile = (Texture2D)Resources.Load("rock_03");
+                break;
+            case 3:
+                origMapProfile = (Texture2D)Resources.Load("rock_04");
+                break;
+            default:
+                break;
+        }
+
+        mapProfile = new Texture2D(mapWidth, mapHeight);
+        pixels = new float[mapProfile.width, mapProfile.height];
+        pixelsColor = new Color[mapProfile.width * mapProfile.height];
+        percThresholds = new float[3] { groundPercBot, waterPercLeft, waterPercRight };
+        CalcNoise();
+        clusterFinder = new ClusterFinder(pixels, mapProfile.width, mapProfile.height, percThresholds);
+        pixelsMask = clusterFinder.GetMask();
+        FillColorArray();
+        //TestFillColorArray();
+        mapProfile.SetPixels(pixelsColor);
         mapProfile.anisoLevel = 16;
 		mapProfile.Apply(true);
 

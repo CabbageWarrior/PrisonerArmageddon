@@ -195,13 +195,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5973cbd0fef8b646b09b723ffb78132, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapWidth: 800
-  mapHeight: 500
-  groundPercBot: 10
-  waterPercLeft: 10
-  waterPercRight: 10
-  featuresScale: 5
-  threshold: 0.4
+  mapWidth: 2000
+  mapHeight: 1000
+  groundPercBot: 100
+  waterPercLeft: 0
+  waterPercRight: 0
+  featuresScale: 11
+  threshold: 0.5
 --- !u!1 &2012943473
 GameObject:
   m_ObjectHideFlags: 0

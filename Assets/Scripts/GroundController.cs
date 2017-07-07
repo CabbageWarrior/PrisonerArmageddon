@@ -3,7 +3,7 @@
 public class GroundController : MonoBehaviour
 {
 
-    public GameObject mapGenerator;
+    public GameObject gameManager, prisonerSpawner;
 
     // Reference variable for the SpriteRenderer component.
     private SpriteRenderer spriteRenderer;
@@ -18,6 +18,8 @@ public class GroundController : MonoBehaviour
     private Color colorTransparent;
 
 
+    private SpawnerController spawner;
+
     /// <summary>
     /// Start method.
     /// </summary>
@@ -25,7 +27,10 @@ public class GroundController : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
 
-        Texture2D textureOriginal = mapGenerator.GetComponent<MapGenerator>().GetMapTexture();
+        spawner = prisonerSpawner.GetComponent<SpawnerController>();
+
+        Texture2D textureOriginal = gameManager.GetComponent<MapGenerator>().GetMapTexture();
+
         // Resources.Load("nome_do_arquivo") carrega um arquivo localizado
         // em Assets/Resources
         Texture2D tex_clone = (Texture2D)Instantiate(textureOriginal);
@@ -38,6 +43,28 @@ public class GroundController : MonoBehaviour
         BulletController.groundController = this;
 
         ResetPolygonCollider2D();
+
+        // Spawn Players after ground creation.
+        for (int i = 0; i < 3; i++)
+        {
+            spawner.CreateNewPrisoner(
+                -groundTotalWidth / 2,  // xMin
+                groundTotalWidth / 2,   // xMax
+                -groundTotalHeight / 2, // yMin
+                groundTotalHeight / 2,  // yMax
+                1                       // teamNumber
+            );
+        }
+        for (int i = 0; i < 3; i++)
+        {
+            spawner.CreateNewPrisoner(
+                -groundTotalWidth / 2,  // xMin
+                groundTotalWidth / 2,   // xMax
+                -groundTotalHeight / 2, // yMin
+                groundTotalHeight / 2,  // yMax
+                2                       // teamNumber
+            );
+        }
     }
 
     /// <summary>
@@ -51,13 +78,13 @@ public class GroundController : MonoBehaviour
         groundImgPixelHeight = spriteRenderer.sprite.texture.height;
     }
 
-    /// <summary>
-    /// Update method.
-    /// </summary>
-    void Update()
-    {
+    ///// <summary>
+    ///// Update method.
+    ///// </summary>
+    //void Update()
+    //{
 
-    }
+    //}
 
     /// <summary>
     /// Destroys part of the ground based on the CircleCollider2D dimension.

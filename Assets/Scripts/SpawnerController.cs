@@ -5,10 +5,11 @@ using UnityEngine;
 public class SpawnerController : MonoBehaviour
 {
 
-    private int teamNumber;
+    private int teamNumber, teamElementNumber;
     private CircleCollider2D circleCollider2D;
     RuntimeAnimatorController team1Animator, team2Animator;
 
+    public int playersPerTeam;
     public GameObject gameManager, playerPrefab, ground;
     public LayerMask whatIsGround;
 
@@ -48,6 +49,7 @@ public class SpawnerController : MonoBehaviour
 
         GameObject currentPlayer = Instantiate(playerPrefab, transform.position, Quaternion.identity);
         currentPlayer.GetComponent<PrisonerBehavior>().gameManager = gameManager;
+        currentPlayer.GetComponent<PrisonerBehavior>().SetPrisonerInfos(teamNumber, teamElementNumber);
         if (teamNumber == 1)
         {
             currentPlayer.GetComponent<Animator>().runtimeAnimatorController = team1Animator;
@@ -59,7 +61,7 @@ public class SpawnerController : MonoBehaviour
     }
 
     //public void CreateNewPrisoner(Vector3 spawnPosition, int teamNumber)
-    public void CreateNewPrisoner(float xMin, float xMax, float yMin, float yMax, int teamNumber)
+    public void CreateNewPrisoner(float xMin, float xMax, float yMin, float yMax, int teamNumber, int teamElementNumber)
     {
         Vector3 spawnPosition;
         RaycastHit2D availablePositionFloor;
@@ -82,6 +84,7 @@ public class SpawnerController : MonoBehaviour
         } while (availablePositionFloor.collider == null || circleCollisions.Length > 0);
 
         this.teamNumber = teamNumber;
+        this.teamElementNumber = teamElementNumber;
         SetSpawnerPosition(spawnPosition);
         circleCollider2D.enabled = true;
 

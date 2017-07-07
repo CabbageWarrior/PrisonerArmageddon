@@ -462,11 +462,12 @@ MonoBehaviour:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1370007205}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7dabd0a604d805439854752ab65dc50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mainCamera: {fileID: 1547122273}
 --- !u!1 &1547122273
 GameObject:
   m_ObjectHideFlags: 0
@@ -1001,6 +1002,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b27c38507437d843aa7df4c0e0e09c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playersPerTeam: 3
   gameManager: {fileID: 1370007205}
   playerPrefab: {fileID: 1535743599651770, guid: c04b89bce1b290343a638c94caf535ca,
     type: 2}

@@ -43,28 +43,30 @@ public class GroundController : MonoBehaviour
         BulletController.groundController = this;
 
         ResetPolygonCollider2D();
-
+        
         // Spawn Players after ground creation.
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < spawner.playersPerTeam; i++)
         {
             spawner.CreateNewPrisoner(
                 -groundTotalWidth / 2,  // xMin
                 groundTotalWidth / 2,   // xMax
                 -groundTotalHeight / 2, // yMin
                 groundTotalHeight / 2,  // yMax
-                1                       // teamNumber
+                1,                      // teamNumber
+                i
             );
-        }
-        for (int i = 0; i < 3; i++)
-        {
+
             spawner.CreateNewPrisoner(
                 -groundTotalWidth / 2,  // xMin
                 groundTotalWidth / 2,   // xMax
                 -groundTotalHeight / 2, // yMin
                 groundTotalHeight / 2,  // yMax
-                2                       // teamNumber
+                2,                      // teamNumber
+                i
             );
         }
+
+        gameManager.GetComponent<TurnManager>().SetActivePlayer(Random.Range(1, 2), Random.Range(0, spawner.playersPerTeam));
     }
 
     /// <summary>

@@ -22,22 +22,15 @@ public class MapGenerator : MonoBehaviour {
     private Sprite bkgSprite;
     private SpriteRenderer bkgRenderer;
 
-<<<<<<< HEAD
     // Use this for initialization
     void Start () {
 
     }
-=======
-	//// Use this for initialization
-	//void Start () {
 
-	//}
->>>>>>> origin/master
-	
 	//// Update is called once per frame
-	//void Update () {
+	void Update () {
 		
-	//}
+	}
 
 	void CalcNoise()
 	{
@@ -131,7 +124,7 @@ public class MapGenerator : MonoBehaviour {
                 break;
         }
 
-        background.transform.localScale += new Vector3(0.5f, 0f, 0f);
+        background.transform.localScale += new Vector3(2.0f, 1.8f, 0f);
 
         switch (colorNbr)
         {

@@ -12,11 +12,27 @@ public class DamageController : MonoBehaviour
 
     private PrisonerMovement prisonerMovement;
     private PrisonerBehavior prisonerBehavior;
+    private TextMesh displayedLife;
+
+    private Color team1TextColor = new Color(255, 138, 0);
+    private Color team2TextColor = new Color(0, 255, 12);
+    private int teamNbr = 0;
 
     // Use this for initialization
     void Start()
     {
+        displayedLife = this.transform.Find("HealthScore").GetComponent<TextMesh>();
         currentLife = life;
+        displayedLife.text = currentLife.ToString();
+
+        teamNbr = this.GetComponent<PrisonerBehavior>().teamNumber;
+
+        if (teamNbr == 1)
+            displayedLife.color = team1TextColor;
+        else
+            displayedLife.color = team2TextColor;
+
+
         anim = GetComponent<Animator>();
         prisonerMovement = GetComponent<PrisonerMovement>();
         prisonerBehavior = GetComponent<PrisonerBehavior>();
@@ -44,6 +60,11 @@ public class DamageController : MonoBehaviour
         if (currentLife < 0)
         {
             currentLife = 0;
+            displayedLife.text = currentLife.ToString();
+        }
+        else
+        {
+            displayedLife.text = currentLife.ToString();
         }
 
         if (currentLife == 0 && !anim.GetBool("isDead"))

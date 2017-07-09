@@ -10,13 +10,16 @@ public class DamageController : MonoBehaviour
     public float life;
     public float currentLife;
 
+    private PrisonerMovement prisonerMovement;
+    private PrisonerBehavior prisonerBehavior;
 
     // Use this for initialization
     void Start()
     {
         currentLife = life;
         anim = GetComponent<Animator>();
-
+        prisonerMovement = GetComponent<PrisonerMovement>();
+        prisonerBehavior = GetComponent<PrisonerBehavior>();
     }
 
     // Update is called once per frame
@@ -52,11 +55,20 @@ public class DamageController : MonoBehaviour
     private void onDeath()
     {
         anim.SetBool("isDead", true);
-        GetComponent<PrisonerMovement>().enabled = false;
-        
+        prisonerMovement.enabled = false;
+
+        if (prisonerBehavior.teamNumber == 1)
+        {
+            PrisonerBehavior.Team1Prisoners[prisonerBehavior.teamElementNumber] = false;
+        }
+        else
+        {
+            PrisonerBehavior.Team2Prisoners[prisonerBehavior.teamElementNumber] = false;
+        }
+
         if (transform.GetChild(0).childCount > 0)
         {
-            //Destroy(transform.GetChild(0).GetChild(0).gameObject);
+            Destroy(transform.GetChild(0).GetChild(0).gameObject);
             transform.GetChild(0).GetChild(0).gameObject.SetActive(false);
         }
     }

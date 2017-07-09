@@ -338,7 +338,11 @@ MonoBehaviour:
   groundPercBot: 100
   waterPercLeft: 0
   waterPercRight: 0
+<<<<<<< HEAD
+  featuresScale: 11
+=======
   featuresScale: 12
+>>>>>>> de8fb4391158478bb519d5aeb7f0aeda85c33e28
   threshold: 0.5
   background: {fileID: 964155772}
 --- !u!1 &1750902171

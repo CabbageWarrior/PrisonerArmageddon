@@ -16,6 +16,18 @@ public class WaterDestroy : MonoBehaviour {
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        Destroy(collision.gameObject);
+        GameObject other = collision.gameObject;
+        if (other.tag == "Player")
+        {
+            // Pasare il turno 
+            // Togliere dalla rotazione della telecamera
+
+            Destroy(other);
+        }
+        else
+        {
+            Destroy(other);
+        }
+        
     }
 }

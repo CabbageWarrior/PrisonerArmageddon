@@ -16,6 +16,7 @@ public class PrisonerMovement : MonoBehaviour {
 	private Animator anim;
 	private float planeParallelX, planeParallelY, prisonerWidth, prisonerHeight;
     private enum raysHitCondition {TwoHit, FrontHit, BackHit, NoHit};
+    private PrisonerBehavior behavior;
 
     void Awake()
 	{
@@ -23,6 +24,7 @@ public class PrisonerMovement : MonoBehaviour {
         prisonerWidth = transform.localScale.x;
 		prisonerHeight = transform.localScale.y;
         anim = GetComponent<Animator> ();
+        behavior = GetComponent<PrisonerBehavior>();
 	}
 
 	void Start ()
@@ -32,8 +34,11 @@ public class PrisonerMovement : MonoBehaviour {
 	
 	void Update () 
 	{
-		PrisonerMoveKeyboard ();
-	}
+        if (behavior.isActive == true)
+        { 
+		    PrisonerMoveKeyboard ();
+        }
+    }
 
 	void PrisonerMoveKeyboard()
 	{
